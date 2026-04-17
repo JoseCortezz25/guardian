@@ -1,0 +1,27 @@
+{
+  "name": "gga-ts",
+  "version": "1.0.0",
+  "description": "TypeScript CLI foundation for Guardian automation.",
+  "main": "dist/cli.js",
+  "bin": {
+    "gga-ts": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test"
+  },
+  "keywords": [
+    "cli",
+    "typescript",
+    "guardian"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2"
+  }
+}
