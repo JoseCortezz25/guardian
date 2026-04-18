@@ -1,22 +1,59 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { cacheClearAllCommand, cacheClearCommand, cacheStatusCommand } from './commands/cache';
+import { initCommand } from './commands/init';
+import { installCommand, uninstallCommand } from './commands/install';
+import { runCommand } from './commands/run';
+
+async function exitWith(command: Promise<number>): Promise<never> {
+  process.exit(await command);
+}
 
 export function createProgram(): Command {
   const program = new Command();
 
-  program
-    .name('gga-ts')
-    .description('Guardian CLI (TypeScript)')
-    .version('1.0.0')
-    .option('-v, --verbose', 'Enable verbose output', false);
+  program.name('guardian').description('Guardian CLI').version('1.0.0');
 
-  // TODO(batch-2): wire real commands from src/commands.
   program
-    .command('placeholder')
-    .description('Placeholder command until command modules are implemented')
-    .action(() => {
-      process.stdout.write('TODO: implement command modules in the next batch.\n');
-    });
+    .command('init')
+    .description('Create default .guardian and AGENTS.md files')
+    .action(async () => exitWith(initCommand()));
+
+  program
+    .command('install')
+    .description('Install the git hook')
+    .option('--commit-msg', 'Install into commit-msg instead of pre-commit')
+    .action(async (opts: { commitMsg?: boolean }) => exitWith(installCommand(opts)));
+
+  program
+    .command('uninstall')
+    .description('Remove installed Guardian hook blocks')
+    .action(async () => exitWith(uninstallCommand()));
+
+  program
+    .command('run')
+    .description('Run the guardian review')
+    .option('--no-cache', 'Disable cache for this run')
+    .option('--pr-mode', 'Review files changed against the base branch')
+    .option('--ci', 'Review files changed in the last commit')
+    .action(async (opts: { noCache?: boolean; prMode?: boolean; ci?: boolean }) => exitWith(runCommand(opts)));
+
+  const cache = program.command('cache').description('Inspect and manage cache');
+
+  cache
+    .command('status')
+    .description('Show project cache status')
+    .action(async () => exitWith(cacheStatusCommand()));
+
+  cache
+    .command('clear')
+    .description('Clear the current project cache')
+    .action(async () => exitWith(cacheClearCommand()));
+
+  cache
+    .command('clear-all')
+    .description('Clear all Guardian cache data')
+    .action(async () => exitWith(cacheClearAllCommand()));
 
   return program;
 }

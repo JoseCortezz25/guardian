@@ -1,18 +1,37 @@
-export type JsonPrimitive = string | number | boolean | null;
+export type ProviderName = 'claude' | 'gemini' | 'opencode';
 
-export type JsonValue =
-  | JsonPrimitive
-  | JsonValue[]
-  | {
-      [key: string]: JsonValue;
-    };
-
-export interface CliGlobalOptions {
-  verbose: boolean;
+export interface GuardianConfig {
+  provider: ProviderName;
+  providerModel?: string;
+  filePatterns: string[];
+  excludePatterns: string[];
+  rulesFile: string;
+  strictMode: boolean;
+  timeout: number;
+  prBaseBranch?: string;
+  cache: boolean;
 }
 
-export interface SpawnResult {
-  code: number;
-  stdout: string;
-  stderr: string;
+export type ReviewStatus = 'PASSED' | 'FAILED' | 'AMBIGUOUS';
+
+export interface ReviewResult {
+  status: ReviewStatus;
+  violations?: string;
+  raw?: string;
+}
+
+export interface StagedFile {
+  path: string;
+  content: string;
+}
+
+export interface CacheEntry {
+  fileHash: string;
+  status: 'PASSED';
+}
+
+export interface Provider {
+  name: ProviderName;
+  isAvailable(): Promise<boolean>;
+  call(prompt: string, opts: { timeout: number }): Promise<string>;
 }

@@ -1,19 +1,35 @@
-export function parseList(input: string | undefined): string[] {
-  if (!input) {
-    return [];
-  }
+import type { ReviewResult } from './types';
 
-  return input
-    .split(',')
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
+const ANSI_PATTERN = /\u001B\[[0-9;]*m/g;
+const STATUS_PATTERN = /^\**\s*status\s*:\s*(passed|failed)\s*\**$/i;
+
+export function stripAnsi(text: string): string {
+  return text.replace(ANSI_PATTERN, '');
 }
 
-export function parseBoolean(input: string | undefined): boolean {
-  if (!input) {
-    return false;
+export function parseResponse(rawOutput: string): ReviewResult {
+  const cleaned = stripAnsi(rawOutput).trim();
+  const lines = cleaned.split(/\r?\n/).slice(0, 15);
+
+  for (const line of lines) {
+    const match = line.trim().match(STATUS_PATTERN);
+
+    if (!match) {
+      continue;
+    }
+
+    if (match[1].toUpperCase() === 'PASSED') {
+      return { status: 'PASSED' };
+    }
+
+    return {
+      status: 'FAILED',
+      violations: cleaned
+    };
   }
 
-  const normalized = input.toLowerCase().trim();
-  return normalized === 'true' || normalized === '1' || normalized === 'yes';
+  return {
+    status: 'AMBIGUOUS',
+    raw: cleaned
+  };
 }
