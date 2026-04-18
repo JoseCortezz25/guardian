@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, join } from 'node:path';
+import { dirname, isAbsolute, join, sep } from 'node:path';
 
 const BLOCK_START = '# >>> guardian start >>>';
 const BLOCK_END = '# <<< guardian end <<<';
@@ -14,7 +14,15 @@ function getHooksDir(cwd: string): string {
       stdio: ['ignore', 'pipe', 'ignore']
     }).trim();
 
-    return isAbsolute(gitPath) ? gitPath : join(cwd, gitPath);
+    const resolved = isAbsolute(gitPath) ? gitPath : join(cwd, gitPath);
+
+    // Husky v9 sets core.hooksPath to `.husky/_` (internal helper dir).
+    // Actual user-facing hooks live in the parent `.husky/`.
+    if (resolved.endsWith(`${sep}_`)) {
+      return dirname(resolved);
+    }
+
+    return resolved;
   } catch {
     return join(cwd, '.git', 'hooks');
   }

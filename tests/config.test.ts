@@ -27,8 +27,8 @@ describe('loadConfig', () => {
 
     expect(loadConfig(projectDir)).toEqual({
       provider: 'claude',
-      filePatterns: ['*.ts', '*.tsx', '*.js', '*.jsx'],
-      excludePatterns: ['*.test.ts', '*.spec.ts', '*.d.ts', '*.stories.tsx'],
+      filePatterns: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+      excludePatterns: ['**/*.test.ts', '**/*.spec.ts', '**/*.d.ts', '**/*.stories.tsx'],
       rulesFile: 'AGENTS.md',
       strictMode: true,
       timeout: 300,
