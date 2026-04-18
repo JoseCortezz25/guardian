@@ -18,7 +18,7 @@ export class OpencodeProvider implements Provider {
     }
 
     return spawnWithTimeout('opencode', args, {
-      timeout: opts.timeout * 1000
+      timeout: opts.timeout * 1000,
     });
   }
 }

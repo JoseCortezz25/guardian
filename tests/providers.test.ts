@@ -9,19 +9,21 @@ const baseConfig: GuardianConfig = {
   rulesFile: 'AGENTS.md',
   strictMode: true,
   timeout: 300,
-  cache: true
+  cache: true,
 };
 
 describe('getProvider', () => {
   it('returns the configured provider instance', () => {
     expect(getProvider(baseConfig).name).toBe('claude');
     expect(getProvider({ ...baseConfig, provider: 'gemini' }).name).toBe('gemini');
-    expect(getProvider({ ...baseConfig, provider: 'opencode', providerModel: 'o3' }).name).toBe('opencode');
+    expect(getProvider({ ...baseConfig, provider: 'opencode', providerModel: 'o3' }).name).toBe(
+      'opencode'
+    );
   });
 
   it('throws for an unknown provider', () => {
-    expect(() => getProvider({ ...baseConfig, provider: 'unknown' as GuardianConfig['provider'] })).toThrow(
-      /Unknown provider/
-    );
+    expect(() =>
+      getProvider({ ...baseConfig, provider: 'unknown' as GuardianConfig['provider'] })
+    ).toThrow(/Unknown provider/);
   });
 });

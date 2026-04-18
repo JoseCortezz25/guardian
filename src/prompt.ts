@@ -42,7 +42,9 @@ export function buildPrompt(rules: string, files: StagedFile[], commitMessage?: 
     rules.trim(),
     '',
     '## Files To Review',
-    files.map((file) => `### ${file.path}\n\n\u0060\u0060\u0060\n${file.content}\n\u0060\u0060\u0060`).join('\n\n')
+    files
+      .map(file => `### ${file.path}\n\n\u0060\u0060\u0060\n${file.content}\n\u0060\u0060\u0060`)
+      .join('\n\n'),
   ];
 
   if (commitMessage) {

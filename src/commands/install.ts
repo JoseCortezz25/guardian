@@ -11,7 +11,7 @@ function getHooksDir(cwd: string): string {
     const gitPath = execFileSync('git', ['rev-parse', '--git-path', 'hooks'], {
       cwd,
       encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore']
+      stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
 
     const resolved = isAbsolute(gitPath) ? gitPath : join(cwd, gitPath);
@@ -65,7 +65,10 @@ function removeHookBlock(hookPath: string): void {
   writeFileSync(hookPath, `${next}\n`, 'utf8');
 }
 
-export async function installCommand(opts: { commitMsg?: boolean }, cwd = process.cwd()): Promise<number> {
+export async function installCommand(
+  opts: { commitMsg?: boolean },
+  cwd = process.cwd()
+): Promise<number> {
   const hooksDir = getHooksDir(cwd);
   installHook(join(hooksDir, opts.commitMsg ? 'commit-msg' : 'pre-commit'));
   return 0;

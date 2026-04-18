@@ -32,7 +32,7 @@ describe('loadConfig', () => {
       rulesFile: 'AGENTS.md',
       strictMode: true,
       timeout: 300,
-      cache: true
+      cache: true,
     });
   });
 
@@ -40,14 +40,19 @@ describe('loadConfig', () => {
     const projectDir = createTempProject();
     writeFileSync(
       join(projectDir, '.guardian'),
-      ['PROVIDER="gemini"', 'RULES_FILE="TEAM_AGENTS.md"', 'TIMEOUT="120"', 'STRICT_MODE="false"'].join('\n')
+      [
+        'PROVIDER="gemini"',
+        'RULES_FILE="TEAM_AGENTS.md"',
+        'TIMEOUT="120"',
+        'STRICT_MODE="false"',
+      ].join('\n')
     );
 
     expect(loadConfig(projectDir)).toMatchObject({
       provider: 'gemini',
       rulesFile: 'TEAM_AGENTS.md',
       timeout: 120,
-      strictMode: false
+      strictMode: false,
     });
   });
 
@@ -56,8 +61,14 @@ describe('loadConfig', () => {
     const projectDir = createTempProject();
     mkdirSync(join(homeDir, '.config', 'guardian'), { recursive: true });
 
-    writeFileSync(join(homeDir, '.config', 'guardian', 'config'), 'RULES_FILE="GLOBAL.md"\nTIMEOUT="111"');
-    writeFileSync(join(projectDir, '.guardian'), 'RULES_FILE="PROJECT.md"\nTIMEOUT="222"\nSTRICT_MODE="true"');
+    writeFileSync(
+      join(homeDir, '.config', 'guardian', 'config'),
+      'RULES_FILE="GLOBAL.md"\nTIMEOUT="111"'
+    );
+    writeFileSync(
+      join(projectDir, '.guardian'),
+      'RULES_FILE="PROJECT.md"\nTIMEOUT="222"\nSTRICT_MODE="true"'
+    );
 
     process.env.HOME = homeDir;
     process.env.GUARDIAN_RULES_FILE = 'ENV.md';
@@ -67,15 +78,22 @@ describe('loadConfig', () => {
     expect(loadConfig(projectDir)).toMatchObject({
       rulesFile: 'ENV.md',
       timeout: 333,
-      strictMode: false
+      strictMode: false,
     });
   });
 
   it('parses FILE_PATTERNS as a comma-separated list', () => {
     const projectDir = createTempProject();
-    writeFileSync(projectDir + '/.guardian', 'FILE_PATTERNS="src/**/*.ts,src/**/*.tsx, scripts/*.js"');
+    writeFileSync(
+      projectDir + '/.guardian',
+      'FILE_PATTERNS="src/**/*.ts,src/**/*.tsx, scripts/*.js"'
+    );
 
-    expect(loadConfig(projectDir).filePatterns).toEqual(['src/**/*.ts', 'src/**/*.tsx', 'scripts/*.js']);
+    expect(loadConfig(projectDir).filePatterns).toEqual([
+      'src/**/*.ts',
+      'src/**/*.tsx',
+      'scripts/*.js',
+    ]);
   });
 
   it('splits provider model at the first colon', () => {
@@ -84,7 +102,7 @@ describe('loadConfig', () => {
 
     expect(loadConfig(projectDir)).toMatchObject({
       provider: 'opencode',
-      providerModel: 'anthropic/claude-opus-4'
+      providerModel: 'anthropic/claude-opus-4',
     });
   });
 });

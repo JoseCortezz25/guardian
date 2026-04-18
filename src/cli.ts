@@ -36,7 +36,9 @@ export function createProgram(): Command {
     .option('--no-cache', 'Disable cache for this run')
     .option('--pr-mode', 'Review files changed against the base branch')
     .option('--ci', 'Review files changed in the last commit')
-    .action(async (opts: { noCache?: boolean; prMode?: boolean; ci?: boolean }) => exitWith(runCommand(opts)));
+    .action(async (opts: { noCache?: boolean; prMode?: boolean; ci?: boolean }) =>
+      exitWith(runCommand(opts))
+    );
 
   const cache = program.command('cache').description('Inspect and manage cache');
 

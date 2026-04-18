@@ -1,5 +1,13 @@
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -85,7 +93,7 @@ export function createCacheManager(cwd: string, rulesFile: string, enabled: bool
       hasPassed: () => false,
       markPassed: () => undefined,
       getStatus: () => ({ valid: false, cachedFiles: 0, size: '0 B' }),
-      clear: () => undefined
+      clear: () => undefined,
     };
   }
 
@@ -124,13 +132,13 @@ export function createCacheManager(cwd: string, rulesFile: string, enabled: bool
       return {
         valid,
         cachedFiles: getCachedFilesCount(filesDir),
-        size: formatBytes(getDirectorySize(projectCacheDir))
+        size: formatBytes(getDirectorySize(projectCacheDir)),
       };
     },
     clear(): void {
       cleanupProjectCache(projectCacheDir);
       initializeProjectCache(projectCacheDir, contextHash);
-    }
+    },
   };
 }
 

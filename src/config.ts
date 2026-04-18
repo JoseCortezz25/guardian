@@ -10,7 +10,7 @@ const DEFAULTS: GuardianConfig = {
   rulesFile: 'AGENTS.md',
   strictMode: true,
   timeout: 300,
-  cache: true
+  cache: true,
 };
 
 type RawConfig = Partial<
@@ -34,8 +34,8 @@ function parseList(value: string | undefined): string[] | undefined {
 
   const items = value
     .split(',')
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
 
   return items.length > 0 ? items : undefined;
 }
@@ -67,7 +67,9 @@ function parseNumber(value: string | undefined): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-function parseProvider(value: string | undefined): Pick<GuardianConfig, 'provider' | 'providerModel'> | undefined {
+function parseProvider(
+  value: string | undefined
+): Pick<GuardianConfig, 'provider' | 'providerModel'> | undefined {
   if (!value) {
     return undefined;
   }
@@ -106,16 +108,21 @@ function parseConfigFile(filePath: string): RawConfig {
 
     const key = match[1] as keyof RawConfig;
 
-    if (!(key in {
-      PROVIDER: true,
-      FILE_PATTERNS: true,
-      EXCLUDE_PATTERNS: true,
-      RULES_FILE: true,
-      STRICT_MODE: true,
-      TIMEOUT: true,
-      PR_BASE_BRANCH: true,
-      CACHE: true
-    })) {
+    if (
+      !(
+        key in
+        {
+          PROVIDER: true,
+          FILE_PATTERNS: true,
+          EXCLUDE_PATTERNS: true,
+          RULES_FILE: true,
+          STRICT_MODE: true,
+          TIMEOUT: true,
+          PR_BASE_BRANCH: true,
+          CACHE: true,
+        }
+      )
+    ) {
       continue;
     }
 
@@ -200,8 +207,9 @@ export function loadConfig(cwd = process.cwd()): GuardianConfig {
   const globalConfigPath = join(homedir(), '.config', 'guardian', 'config');
   const projectConfigPath = join(cwd, '.guardian');
 
-  return [parseConfigFile(globalConfigPath), parseConfigFile(projectConfigPath), mapEnvConfig(process.env)].reduce(
-    (config, raw) => applyRawConfig(config, raw),
-    { ...DEFAULTS }
-  );
+  return [
+    parseConfigFile(globalConfigPath),
+    parseConfigFile(projectConfigPath),
+    mapEnvConfig(process.env),
+  ].reduce((config, raw) => applyRawConfig(config, raw), { ...DEFAULTS });
 }

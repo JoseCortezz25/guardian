@@ -24,12 +24,12 @@ export function parseResponse(rawOutput: string): ReviewResult {
 
     return {
       status: 'FAILED',
-      violations: cleaned
+      violations: cleaned,
     };
   }
 
   return {
     status: 'AMBIGUOUS',
-    raw: cleaned
+    raw: cleaned,
   };
 }

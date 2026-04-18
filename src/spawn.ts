@@ -6,15 +6,11 @@ export interface SpawnOptions {
   cwd?: string;
 }
 
-export function spawnWithTimeout(
-  cmd: string,
-  args: string[],
-  opts: SpawnOptions
-): Promise<string> {
+export function spawnWithTimeout(cmd: string, args: string[], opts: SpawnOptions): Promise<string> {
   return new Promise((resolve, reject) => {
     const proc = spawn(cmd, args, {
       cwd: opts.cwd,
-      stdio: ['pipe', 'pipe', 'pipe']
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
 
     let stdout = '';
@@ -31,15 +27,15 @@ export function spawnWithTimeout(
       );
     }, opts.timeout);
 
-    proc.stdout.on('data', (chunk) => {
+    proc.stdout.on('data', chunk => {
       stdout += chunk.toString();
     });
 
-    proc.stderr.on('data', (chunk) => {
+    proc.stderr.on('data', chunk => {
       stderr += chunk.toString();
     });
 
-    proc.on('error', (error) => {
+    proc.on('error', error => {
       clearTimeout(timeoutId);
 
       if (settled) {
@@ -54,7 +50,7 @@ export function spawnWithTimeout(
       );
     });
 
-    proc.on('close', (code) => {
+    proc.on('close', code => {
       clearTimeout(timeoutId);
 
       if (settled) {
@@ -83,12 +79,12 @@ export function spawnWithTimeout(
 export function commandExists(cmd: string): Promise<boolean> {
   const lookupCommand = process.platform === 'win32' ? 'where' : 'which';
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const proc = spawn(lookupCommand, [cmd], {
-      stdio: ['ignore', 'ignore', 'ignore']
+      stdio: ['ignore', 'ignore', 'ignore'],
     });
 
     proc.on('error', () => resolve(false));
-    proc.on('close', (code) => resolve(code === 0));
+    proc.on('close', code => resolve(code === 0));
   });
 }
