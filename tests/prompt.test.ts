@@ -37,7 +37,9 @@ describe('resolveRulesFile', () => {
     writeFileSync(join(projectDir, 'AGENTS.md'), 'Base rules with `missing.md`.');
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    await expect(resolveRulesFile('AGENTS.md', projectDir)).resolves.toBe('Base rules with `missing.md`.');
+    await expect(resolveRulesFile('AGENTS.md', projectDir)).resolves.toBe(
+      'Base rules with `missing.md`.'
+    );
     expect(warn).toHaveBeenCalledWith('[Guardian] ⚠ Referencia no encontrada: missing.md');
   });
 
@@ -60,6 +62,8 @@ describe('buildPrompt', () => {
     expect(prompt).toContain('## Coding Standards\nRule 1');
     expect(prompt).toContain('## Files To Review\n### src/example.ts');
     expect(prompt).toContain('## Commit Message\nfeat: test prompt');
-    expect(prompt).toContain('Your response must start with exactly STATUS: PASSED or STATUS: FAILED.');
+    expect(prompt).toContain(
+      'Your response must start with exactly STATUS: PASSED or STATUS: FAILED.'
+    );
   });
 });

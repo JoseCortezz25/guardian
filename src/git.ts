@@ -6,7 +6,7 @@ function runGit(args: string[], cwd: string): string {
   return execFileSync('git', args, {
     cwd,
     encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'ignore']
+    stdio: ['ignore', 'pipe', 'ignore'],
   });
 }
 
@@ -21,8 +21,8 @@ function filterFiles(files: string[], filePatterns: string[], excludePatterns: s
 function parseGitFileList(output: string): string[] {
   return output
     .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
 }
 
 export function getStagedFiles(
@@ -30,7 +30,9 @@ export function getStagedFiles(
   excludePatterns: string[],
   cwd = process.cwd()
 ): string[] {
-  const files = parseGitFileList(runGit(['diff', '--cached', '--name-only', '--diff-filter=ACM'], cwd));
+  const files = parseGitFileList(
+    runGit(['diff', '--cached', '--name-only', '--diff-filter=ACM'], cwd)
+  );
   return filterFiles(files, filePatterns, excludePatterns);
 }
 
@@ -48,7 +50,9 @@ export function getPRFiles(
   excludePatterns: string[],
   cwd = process.cwd()
 ): string[] {
-  const files = parseGitFileList(runGit(['diff', '--name-only', '--diff-filter=ACM', `${baseBranch}...HEAD`], cwd));
+  const files = parseGitFileList(
+    runGit(['diff', '--name-only', '--diff-filter=ACM', `${baseBranch}...HEAD`], cwd)
+  );
   return filterFiles(files, filePatterns, excludePatterns);
 }
 
@@ -57,7 +61,7 @@ export function detectBaseBranch(cwd = process.cwd()): string {
     try {
       execFileSync('git', ['rev-parse', '--verify', branch], {
         cwd,
-        stdio: 'ignore'
+        stdio: 'ignore',
       });
       return branch;
     } catch {

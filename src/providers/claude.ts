@@ -11,7 +11,7 @@ export class ClaudeProvider implements Provider {
   call(prompt: string, opts: { timeout: number }): Promise<string> {
     return spawnWithTimeout('claude', ['--print'], {
       stdin: prompt,
-      timeout: opts.timeout * 1000
+      timeout: opts.timeout * 1000,
     });
   }
 }
