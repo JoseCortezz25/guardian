@@ -32,6 +32,18 @@ Run the CLI directly:
 node dist/cli.js --help
 ```
 
+Available scripts:
+
+| Script                 | Description               |
+| ---------------------- | ------------------------- |
+| `npm run build`        | Compile TypeScript        |
+| `npm test`             | Run tests                 |
+| `npm run test:watch`   | Run tests in watch mode   |
+| `npm run lint`         | Run ESLint                |
+| `npm run lint:fix`     | Run ESLint with autofix   |
+| `npm run format`       | Format with Prettier      |
+| `npm run format:check` | Check Prettier formatting |
+
 ### Link globally
 
 ```bash
@@ -220,64 +232,3 @@ Examples:
 - `claude`
 - `gemini`
 - `opencode`
-
-## Local smoke test
-
-Create a test repository:
-
-```bash
-mkdir guardian-smoke-test
-cd guardian-smoke-test
-git init
-npm init -y
-```
-
-Install Guardian locally, then run:
-
-```bash
-guardian init
-guardian install
-```
-
-Create a test file:
-
-```bash
-mkdir src
-echo 'const x = 1' > src/test.ts
-git add .
-git commit -m "test: guardian smoke"
-```
-
-## Development
-
-Build:
-
-```bash
-npm run build
-```
-
-Run tests:
-
-```bash
-npm test
-```
-
-Watch tests:
-
-```bash
-npm run test:watch
-```
-
-## Current status
-
-Guardian currently ships the MVP CLI flow:
-
-- config loading
-- git file collection
-- prompt construction
-- provider execution
-- response parsing
-- caching
-- hook install/uninstall
-
-Future improvements can include more integration tests, publish automation, and package polish.
