@@ -32,6 +32,18 @@ Run the CLI directly:
 node dist/cli.js --help
 ```
 
+Available scripts:
+
+| Script                 | Description               |
+| ---------------------- | ------------------------- |
+| `npm run build`        | Compile TypeScript        |
+| `npm test`             | Run tests                 |
+| `npm run test:watch`   | Run tests in watch mode   |
+| `npm run lint`         | Run ESLint                |
+| `npm run lint:fix`     | Run ESLint with autofix   |
+| `npm run format`       | Format with Prettier      |
+| `npm run format:check` | Check Prettier formatting |
+
 ### Link globally
 
 ```bash
