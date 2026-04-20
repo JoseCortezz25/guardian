@@ -1,10 +1,17 @@
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import micromatch from 'micromatch';
 import { createCacheManager } from '../cache';
 import { loadConfig } from '../config';
-import { detectBaseBranch, getFileContent, getPRFiles, getStagedFiles } from '../git';
+import {
+  detectBaseBranch,
+  getAllTrackedFiles,
+  getFileContentAsync,
+  getPRFiles,
+  getStagedFiles,
+} from '../git';
 import { parseResponse } from '../parser';
 import { buildPrompt, resolveRulesFile } from '../prompt';
 import { getProvider } from '../providers';
@@ -14,11 +21,21 @@ export interface RunOptions {
   noCache?: boolean;
   prMode?: boolean;
   ci?: boolean;
+  all?: boolean;
 }
 
 function getWorkingTreeContent(filePath: string, cwd: string): string {
   const absolutePath = join(cwd, filePath);
   return existsSync(absolutePath) ? readFileSync(absolutePath, 'utf8') : '';
+}
+
+async function getWorkingTreeContentAsync(filePath: string, cwd: string): Promise<string> {
+  const absolutePath = join(cwd, filePath);
+  try {
+    return await readFile(absolutePath, 'utf8');
+  } catch {
+    return '';
+  }
 }
 
 function handleOperationalError(message: string, strictMode: boolean): number {
@@ -53,10 +70,12 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
   const cacheEnabled = config.cache && !opts.noCache;
   const provider = getProvider(config);
 
+  const mode = opts.all ? 'all' : opts.prMode ? 'pr' : opts.ci ? 'ci' : 'staged';
   console.log('[Guardian] Running Guardian review');
   console.log(`[Guardian] Provider: ${provider.name}`);
   console.log(`[Guardian] Rules file: ${config.rulesFile}`);
   console.log(`[Guardian] Cache: ${cacheEnabled ? 'enabled' : 'disabled'}`);
+  console.log(`[Guardian] Mode: ${mode}`);
 
   if (!(await provider.isAvailable())) {
     return handleOperationalError(
@@ -67,7 +86,9 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
 
   let files: string[];
 
-  if (opts.prMode) {
+  if (opts.all) {
+    files = getAllTrackedFiles(config.filePatterns, config.excludePatterns, cwd);
+  } else if (opts.prMode) {
     files = getPRFiles(
       config.prBaseBranch ?? detectBaseBranch(cwd),
       config.filePatterns,
@@ -85,17 +106,23 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
     return 0;
   }
 
+  console.log(`[Guardian] Found ${files.length} file${files.length === 1 ? '' : 's'} to process`);
+
   const cache = createCacheManager(cwd, config.rulesFile, cacheEnabled);
+
+  const fileContents = await Promise.all(
+    files.map(async filePath => {
+      const content = opts.all
+        ? await getWorkingTreeContentAsync(filePath, cwd)
+        : (await getFileContentAsync(filePath, cwd)) || getWorkingTreeContent(filePath, cwd);
+      return { path: filePath, content };
+    })
+  );
+
   const filesToReview: StagedFile[] = [];
 
-  for (const filePath of files) {
-    const content = getFileContent(filePath, cwd) || getWorkingTreeContent(filePath, cwd);
-
-    if (!content) {
-      continue;
-    }
-
-    if (cache.hasPassed(content)) {
+  for (const { path: filePath, content } of fileContents) {
+    if (!content || cache.hasPassed(content)) {
       continue;
     }
 
