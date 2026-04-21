@@ -15,6 +15,7 @@ It inspects staged files, builds a review prompt from your project rules, calls 
 - Rule loading from `AGENTS.md`
 - Support for referenced markdown rule files
 - Content-based cache to skip unchanged files
+- Parallel file reading for faster reviews
 - CLI commands for init, install, run, and cache management
 
 ## Installation
@@ -178,11 +179,29 @@ Runs the review manually.
 guardian run
 ```
 
-Options:
+#### Run modes
 
-- `--no-cache`
-- `--pr-mode`
-- `--ci`
+Guardian supports four mutually exclusive modes that control which files are reviewed:
+
+| Mode | Command | Files reviewed |
+| ---- | ------- | -------------- |
+| Staged *(default)* | `guardian run` | Files in the git staging area (`git diff --cached`) |
+| All | `guardian run --all` | All tracked files in the repository (`git ls-files`) |
+| PR | `guardian run --pr-mode` | Files changed against the base branch |
+| CI | `guardian run --ci` | Files changed in the last commit |
+
+**Default (staged) mode** is the fastest and recommended for day-to-day use as a pre-commit hook — it only reviews what you are about to commit.
+
+**`--all` mode** is useful for one-off full-codebase audits. It reads files directly from the working tree rather than the git index, so it is faster for large repos. The cache still applies, so unchanged files are skipped automatically.
+
+#### Options
+
+| Option | Description |
+| ------ | ----------- |
+| `--no-cache` | Disable cache for this run |
+| `--pr-mode` | Review files changed against the base branch |
+| `--ci` | Review files changed in the last commit |
+| `--all` | Review all tracked files in the repository |
 
 ### `guardian cache status`
 
@@ -222,6 +241,8 @@ The cache is keyed by file content hash and invalidates automatically when:
 
 - your rules file changes
 - your project `.guardian` changes
+
+File reads are parallelized, so the cache check and content loading for all files happen concurrently — this significantly reduces wait time when many files are staged.
 
 ## Provider requirements
 
