@@ -78,6 +78,9 @@ export async function uninstallCommand(cwd = process.cwd()): Promise<number> {
   const hooksDir = getHooksDir(cwd);
   removeHookBlock(join(hooksDir, 'pre-commit'));
   removeHookBlock(join(hooksDir, 'commit-msg'));
-  console.log('[Guardian] Removed Guardian hook blocks.');
+  console.log('[Guardian] Guardian deactivated. Hook blocks removed.');
+  console.log('[Guardian] To remove the package:');
+  console.log('[Guardian]   npm uninstall guardian        (local)');
+  console.log('[Guardian]   npm uninstall -g guardian     (global)');
   return 0;
 }
