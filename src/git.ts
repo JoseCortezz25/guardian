@@ -1,6 +1,9 @@
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { promisify } from 'node:util';
 import micromatch from 'micromatch';
+
+const execFileAsync = promisify(execFile);
 
 function runGit(args: string[], cwd: string): string {
   return execFileSync('git', args, {
@@ -42,6 +45,27 @@ export function getFileContent(filePath: string, cwd = process.cwd()): string {
   } catch {
     return '';
   }
+}
+
+export async function getFileContentAsync(filePath: string, cwd = process.cwd()): Promise<string> {
+  try {
+    const { stdout } = await execFileAsync('git', ['show', `:${filePath}`], {
+      cwd,
+      encoding: 'utf8',
+    });
+    return stdout;
+  } catch {
+    return '';
+  }
+}
+
+export function getAllTrackedFiles(
+  filePatterns: string[],
+  excludePatterns: string[],
+  cwd = process.cwd()
+): string[] {
+  const files = parseGitFileList(runGit(['ls-files'], cwd));
+  return filterFiles(files, filePatterns, excludePatterns);
 }
 
 export function getPRFiles(
