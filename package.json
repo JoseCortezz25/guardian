@@ -1,6 +1,6 @@
 {
   "name": "guardian",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "TypeScript CLI foundation for Guardian automation.",
   "main": "dist/cli.js",
   "bin": {
@@ -39,7 +39,7 @@
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
     "@types/micromatch": "^4.0.9",
-    "@types/node": "^22.10.1",
+    "@types/node": "^22.19.17",
     "@typescript-eslint/eslint-plugin": "^8.58.2",
     "@typescript-eslint/parser": "^8.58.2",
     "eslint": "^10.2.1",

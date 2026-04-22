@@ -11,6 +11,8 @@ export function spawnWithTimeout(cmd: string, args: string[], opts: SpawnOptions
     const proc = spawn(cmd, args, {
       cwd: opts.cwd,
       stdio: ['pipe', 'pipe', 'pipe'],
+      // On Windows, npm global CLIs are .cmd files and require shell execution
+      shell: process.platform === 'win32',
     });
 
     let stdout = '';
@@ -82,6 +84,7 @@ export function commandExists(cmd: string): Promise<boolean> {
   return new Promise(resolve => {
     const proc = spawn(lookupCommand, [cmd], {
       stdio: ['ignore', 'ignore', 'ignore'],
+      shell: process.platform === 'win32',
     });
 
     proc.on('error', () => resolve(false));
