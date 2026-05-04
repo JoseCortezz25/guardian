@@ -32,6 +32,17 @@ describe('resolveRulesFile', () => {
     );
   });
 
+  it('resolves a referenced file found inside a hidden subdirectory', async () => {
+    const projectDir = createTempProject();
+    mkdirSync(join(projectDir, '.guardian'), { recursive: true });
+    writeFileSync(join(projectDir, 'AGENTS.md'), 'Rules with `code-quality.md`.');
+    writeFileSync(join(projectDir, '.guardian', 'code-quality.md'), 'Quality rules.');
+
+    expect(await resolveRulesFile('AGENTS.md', projectDir)).toBe(
+      'Rules with `code-quality.md`.\n\n### code-quality.md\n\nQuality rules.'
+    );
+  });
+
   it('warns when a referenced markdown file is missing', async () => {
     const projectDir = createTempProject();
     writeFileSync(join(projectDir, 'AGENTS.md'), 'Base rules with `missing.md`.');
