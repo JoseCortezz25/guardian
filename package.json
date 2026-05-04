@@ -1,6 +1,6 @@
 {
   "name": "@ajosecortes/guardian-cli",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "A CLI tool to enforce code quality gates before AI-assisted commits.",
   "main": "dist/cli.js",
   "bin": {
