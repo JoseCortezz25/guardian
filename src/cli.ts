@@ -4,6 +4,7 @@ import { cacheClearAllCommand, cacheClearCommand, cacheStatusCommand } from './c
 import { initCommand } from './commands/init';
 import { installCommand, uninstallCommand } from './commands/install';
 import { runCommand } from './commands/run';
+import { updateCommand } from './commands/update';
 import { version } from '../package.json';
 
 async function exitWith(command: Promise<number>): Promise<never> {
@@ -58,6 +59,11 @@ export function createProgram(): Command {
     .command('clear-all')
     .description('Clear all Guardian cache data')
     .action(async () => exitWith(cacheClearAllCommand()));
+
+  program
+    .command('update')
+    .description('Update Guardian CLI to the latest version')
+    .action(async () => exitWith(updateCommand()));
 
   return program;
 }
