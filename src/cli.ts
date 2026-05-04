@@ -4,6 +4,7 @@ import { cacheClearAllCommand, cacheClearCommand, cacheStatusCommand } from './c
 import { initCommand } from './commands/init';
 import { installCommand, uninstallCommand } from './commands/install';
 import { runCommand } from './commands/run';
+import { version } from '../package.json';
 
 async function exitWith(command: Promise<number>): Promise<never> {
   process.exit(await command);
@@ -12,7 +13,7 @@ async function exitWith(command: Promise<number>): Promise<never> {
 export function createProgram(): Command {
   const program = new Command();
 
-  program.name('guardian').description('Guardian CLI').version('1.0.0');
+  program.name('guardian').description('Guardian CLI').version(version, '-v, -V, --version');
 
   program
     .command('init')
