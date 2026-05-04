@@ -1,8 +1,28 @@
-import { access, readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { access, readFile, readdir } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 import type { StagedFile } from './types';
 
 const MARKDOWN_REF_PATTERN = /`([^`]+\.md)`/g;
+
+async function findFileInDir(dir: string, filename: string): Promise<string | null> {
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isFile() && entry.name === filename) return fullPath;
+    if (entry.isDirectory()) {
+      const found = await findFileInDir(fullPath, filename);
+      if (found) return found;
+    }
+  }
+
+  return null;
+}
 
 export async function resolveRulesFile(rulesPath: string, cwd = process.cwd()): Promise<string> {
   const absolutePath = join(cwd, rulesPath);
@@ -20,13 +40,21 @@ export async function resolveRulesFile(rulesPath: string, cwd = process.cwd()): 
 
   for (const match of rules.matchAll(MARKDOWN_REF_PATTERN)) {
     const ref = match[1];
-    const refPath = join(rulesDir, ref);
+    const directPath = join(rulesDir, ref);
+
+    let resolvedPath: string | null = null;
 
     try {
-      await access(refPath);
-      const refContent = await readFile(refPath, 'utf8');
-      rules += `\n\n### ${ref}\n\n${refContent}`;
+      await access(directPath);
+      resolvedPath = directPath;
     } catch {
+      resolvedPath = await findFileInDir(rulesDir, basename(ref));
+    }
+
+    if (resolvedPath) {
+      const refContent = await readFile(resolvedPath, 'utf8');
+      rules += `\n\n### ${ref}\n\n${refContent}`;
+    } else {
       console.warn(`[Guardian] ⚠ Referencia no encontrada: ${ref}`);
     }
   }
