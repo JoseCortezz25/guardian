@@ -41,12 +41,12 @@ export function StepConfig({ isReconfigure, onComplete }: StepConfigProps) {
       <StepIndicator
         current={1}
         total={3}
-        label={isReconfigure ? 'Reconfiguración' : 'Configuración'}
+        label={isReconfigure ? 'Reconfigure' : 'Configuration'}
       />
 
       <Box flexDirection="column" gap={1}>
         <Box flexDirection="column">
-          <Text color="gray">¿Nombre del archivo de reglas?</Text>
+          <Text color="gray">Rules file name?</Text>
           <Box gap={1}>
             <Text color="cyan">›</Text>
             <TextInput
@@ -60,7 +60,7 @@ export function StepConfig({ isReconfigure, onComplete }: StepConfigProps) {
 
         {phase === 'provider' && (
           <Box flexDirection="column">
-            <Text color="gray">¿Qué proveedor de AI usas?</Text>
+            <Text color="gray">Which AI provider do you use?</Text>
             <SelectInput items={PROVIDERS} onSelect={handleProviderSelect} />
           </Box>
         )}

@@ -12,7 +12,7 @@ export function StepIndicator({ current, total, label }: StepIndicatorProps) {
     <Box flexDirection="column" marginBottom={1}>
       <Box gap={1}>
         <Text color="gray">
-          Paso {current} de {total}
+          Step {current} of {total}
         </Text>
         <Text color="gray">—</Text>
         <Text color="cyan" bold>

@@ -8,8 +8,8 @@ import { installCommand } from '../../commands/install';
 import type { ConfigResult } from './StepConfig';
 
 const HOOKS = [
-  { label: 'pre-commit  (antes de hacer commit)', value: 'pre-commit' },
-  { label: 'commit-msg  (valida el mensaje)', value: 'commit-msg' },
+  { label: 'pre-commit  (runs before each commit)', value: 'pre-commit' },
+  { label: 'commit-msg  (validates the commit message)', value: 'commit-msg' },
 ];
 
 export interface InstallResult {
@@ -44,26 +44,26 @@ export function StepInstall({ config, onComplete }: StepInstallProps) {
 
   return (
     <Box flexDirection="column">
-      <StepIndicator current={2} total={3} label="Instalación" />
+      <StepIndicator current={2} total={3} label="Installation" />
 
       <Box flexDirection="column" gap={1}>
         <StatusLine
           state={initStatus}
           label={
             initStatus === 'loading'
-              ? `Creando ${config.rulesFile} y .guardian...`
-              : `${config.rulesFile} y .guardian creados`
+              ? `Creating ${config.rulesFile} and .guardian...`
+              : `${config.rulesFile} and .guardian created`
           }
         />
 
         {phase === 'select' && (
           <Box flexDirection="column">
-            <Text color="gray">¿En qué hook quieres instalarlo?</Text>
+            <Text color="gray">Which hook do you want to install into?</Text>
             <SelectInput items={HOOKS} onSelect={handleHookSelect} />
           </Box>
         )}
 
-        {phase === 'installing' && <StatusLine state="loading" label="Instalando hook..." />}
+        {phase === 'installing' && <StatusLine state="loading" label="Installing hook..." />}
       </Box>
     </Box>
   );

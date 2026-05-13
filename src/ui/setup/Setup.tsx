@@ -9,8 +9,8 @@ import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const RECONFIGURE = [
-  { label: 'Sí, reconfigurar', value: 'yes' },
-  { label: 'No, salir', value: 'no' },
+  { label: 'Yes, reconfigure', value: 'yes' },
+  { label: 'No, exit', value: 'no' },
 ];
 
 type Step = 'detecting' | 'reconfigure' | 'config' | 'install' | 'run' | 'done';
@@ -54,22 +54,28 @@ export function Setup() {
 
   function handleRunComplete() {
     setStep('done');
-    exit();
   }
+
+  useEffect(() => {
+    if (step === 'done') {
+      const timer = setTimeout(() => exit(), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   return (
     <Box flexDirection="column" padding={1}>
       <Header />
 
-      {step === 'detecting' && <Text color="gray">Detectando estado del proyecto...</Text>}
+      {step === 'detecting' && <Text color="gray">Detecting project state...</Text>}
 
       {step === 'reconfigure' && (
         <Box flexDirection="column" gap={1}>
           <Text>
             <Text color="yellow">⚠</Text>
-            <Text> Guardian ya está configurado en este proyecto.</Text>
+            <Text> Guardian is already configured in this project.</Text>
           </Text>
-          <Text color="gray">¿Quieres reconfigurarlo?</Text>
+          <Text color="gray">Do you want to reconfigure it?</Text>
           <SelectInput items={RECONFIGURE} onSelect={handleReconfigure} />
         </Box>
       )}
@@ -89,10 +95,10 @@ export function Setup() {
           <Text color="gray">{'─'.repeat(44)}</Text>
           <Text>
             <Text color="green">✔</Text>
-            <Text> Guardian listo. El hook correrá en cada commit.</Text>
+            <Text> Guardian is ready. The hook will run on every commit.</Text>
           </Text>
           {installResult && (
-            <Text color="gray">Hook instalado en .husky/{installResult.hook}</Text>
+            <Text color="gray">Hook installed at .husky/{installResult.hook}</Text>
           )}
         </Box>
       )}

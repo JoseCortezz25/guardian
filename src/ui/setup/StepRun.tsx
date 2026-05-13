@@ -8,8 +8,8 @@ import { loadConfig } from '../../config';
 import { runCommand } from '../../commands/run';
 
 const CONFIRM = [
-  { label: 'Sí, revisar ahora', value: 'yes' },
-  { label: 'No, salir', value: 'no' },
+  { label: 'Yes, run now', value: 'yes' },
+  { label: 'No, exit', value: 'no' },
 ];
 
 interface StepRunProps {
@@ -53,16 +53,16 @@ export function StepRun({ onComplete }: StepRunProps) {
 
   return (
     <Box flexDirection="column">
-      <StepIndicator current={3} total={3} label="Primera revisión" />
+      <StepIndicator current={3} total={3} label="First review" />
 
       <Box flexDirection="column" gap={1}>
         {phase === 'checking' && (
-          <StatusLine state="loading" label="Buscando archivos staged..." />
+          <StatusLine state="loading" label="Looking for staged files..." />
         )}
 
         {(phase === 'confirm' || phase === 'running' || phase === 'done') && (
           <Box flexDirection="column">
-            <Text color="gray">{stagedFiles.length} archivo(s) staged:</Text>
+            <Text color="gray">{stagedFiles.length} staged file(s):</Text>
             {stagedFiles.map(f => (
               <Box key={f} gap={1}>
                 <Text color="gray">  ├─</Text>
@@ -74,13 +74,13 @@ export function StepRun({ onComplete }: StepRunProps) {
 
         {phase === 'confirm' && (
           <Box flexDirection="column">
-            <Text color="gray">¿Correr revisión ahora?</Text>
+            <Text color="gray">Run a review now?</Text>
             <SelectInput items={CONFIRM} onSelect={handleConfirm} />
           </Box>
         )}
 
         {phase === 'running' && (
-          <StatusLine state="loading" label="Revisando con Guardian..." />
+          <StatusLine state="loading" label="Reviewing with Guardian..." />
         )}
 
         {phase === 'done' && runStatus && (
