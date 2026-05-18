@@ -26,12 +26,18 @@ type Phase = 'init' | 'select' | 'installing';
 export function StepInstall({ config, onComplete }: StepInstallProps) {
   const [phase, setPhase] = useState<Phase>('init');
   const [initStatus, setInitStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
-      const code = await initCommand(config.rulesFile, config.provider);
-      setInitStatus(code === 0 ? 'success' : 'error');
-      if (code === 0) setPhase('select');
+      try {
+        const code = await initCommand(config.rulesFile, config.provider);
+        setInitStatus(code === 0 ? 'success' : 'error');
+        if (code === 0) setPhase('select');
+      } catch (err) {
+        setInitStatus('error');
+        setInitError(err instanceof Error ? err.message : String(err));
+      }
     })();
   }, []);
 
@@ -52,9 +58,15 @@ export function StepInstall({ config, onComplete }: StepInstallProps) {
           label={
             initStatus === 'loading'
               ? `Creating ${config.rulesFile} and .guardian...`
-              : `${config.rulesFile} and .guardian created`
+              : initStatus === 'error'
+                ? `Failed to create files`
+                : `${config.rulesFile} and .guardian created`
           }
         />
+
+        {initStatus === 'error' && initError && (
+          <Text color="red">{initError}</Text>
+        )}
 
         {phase === 'select' && (
           <Box flexDirection="column">

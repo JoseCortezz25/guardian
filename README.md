@@ -6,6 +6,7 @@ It inspects staged files, builds a review prompt from your project rules, calls 
 
 ## Features
 
+- Interactive guided setup with terminal UI
 - Git hook integration for pre-commit workflows
 - Configurable provider support:
   - Claude
@@ -16,7 +17,7 @@ It inspects staged files, builds a review prompt from your project rules, calls 
 - Support for referenced markdown rule files
 - Content-based cache to skip unchanged files
 - Parallel file reading for faster reviews
-- CLI commands for init, install, run, and cache management
+- CLI commands for setup, init, install, run, and cache management
 
 ## Installation
 
@@ -30,14 +31,14 @@ npm run build
 Run the CLI directly:
 
 ```bash
-node dist/cli.js --help
+node dist/cli.mjs --help
 ```
 
 Available scripts:
 
 | Script                 | Description               |
 | ---------------------- | ------------------------- |
-| `npm run build`        | Compile TypeScript        |
+| `npm run build`        | Compile with tsup         |
 | `npm test`             | Run tests                 |
 | `npm run test:watch`   | Run tests in watch mode   |
 | `npm run lint`         | Run ESLint                |
@@ -69,19 +70,26 @@ npx guardian --help
 
 ## Quick start
 
-Inside a Git repository you want to protect:
+Inside a Git repository you want to protect, run the interactive setup:
+
+```bash
+guardian setup
+```
+
+This walks you through three steps:
+
+1. **Config** — choose your rules file name and AI provider
+2. **Install** — creates `.guardian` and `AGENTS.md`, then installs the Git hook
+3. **Run** — executes a preview review to confirm everything works
+
+If Guardian is already configured in the project, `setup` will detect it and ask if you want to reconfigure.
+
+Alternatively, you can run each step manually:
 
 ```bash
 guardian init
 guardian install
 ```
-
-This creates:
-
-- `.guardian` — project config
-- `AGENTS.md` — review rules for the AI
-
-Then update both files for your project.
 
 ## Configuration
 
@@ -149,6 +157,22 @@ If those files exist, their contents are appended to the final prompt.
 
 ## Commands
 
+### `guardian setup`
+
+Interactive guided setup that runs init, install, and a preview review in a single flow.
+
+```bash
+guardian setup
+```
+
+Prompts for:
+
+- Rules file name (default: `AGENTS.md`)
+- AI provider (`claude`, `gemini`, or `opencode`)
+- Git hook to install into (`pre-commit` or `commit-msg`)
+
+If `.guardian` already exists, it asks whether to reconfigure.
+
 ### `guardian init`
 
 Creates default `.guardian` and `AGENTS.md` files.
@@ -183,12 +207,12 @@ guardian run
 
 Guardian supports four mutually exclusive modes that control which files are reviewed:
 
-| Mode | Command | Files reviewed |
-| ---- | ------- | -------------- |
-| Staged *(default)* | `guardian run` | Files in the git staging area (`git diff --cached`) |
-| All | `guardian run --all` | All tracked files in the repository (`git ls-files`) |
-| PR | `guardian run --pr-mode` | Files changed against the base branch |
-| CI | `guardian run --ci` | Files changed in the last commit |
+| Mode               | Command                  | Files reviewed                                       |
+| ------------------ | ------------------------ | ---------------------------------------------------- |
+| Staged _(default)_ | `guardian run`           | Files in the git staging area (`git diff --cached`)  |
+| All                | `guardian run --all`     | All tracked files in the repository (`git ls-files`) |
+| PR                 | `guardian run --pr-mode` | Files changed against the base branch                |
+| CI                 | `guardian run --ci`      | Files changed in the last commit                     |
 
 **Default (staged) mode** is the fastest and recommended for day-to-day use as a pre-commit hook — it only reviews what you are about to commit.
 
@@ -196,12 +220,12 @@ Guardian supports four mutually exclusive modes that control which files are rev
 
 #### Options
 
-| Option | Description |
-| ------ | ----------- |
-| `--no-cache` | Disable cache for this run |
-| `--pr-mode` | Review files changed against the base branch |
-| `--ci` | Review files changed in the last commit |
-| `--all` | Review all tracked files in the repository |
+| Option       | Description                                  |
+| ------------ | -------------------------------------------- |
+| `--no-cache` | Disable cache for this run                   |
+| `--pr-mode`  | Review files changed against the base branch |
+| `--ci`       | Review files changed in the last commit      |
+| `--all`      | Review all tracked files in the repository   |
 
 ### `guardian cache status`
 
