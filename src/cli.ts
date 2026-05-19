@@ -4,7 +4,6 @@ import { cacheClearAllCommand, cacheClearCommand, cacheStatusCommand } from './c
 import { initCommand } from './commands/init';
 import { installCommand, uninstallCommand } from './commands/install';
 import { runCommand } from './commands/run';
-import { setupCommand } from './commands/setup';
 import { updateCommand } from './commands/update';
 import { version } from '../package.json';
 
@@ -16,11 +15,6 @@ export function createProgram(): Command {
   const program = new Command();
 
   program.name('guardian').description('Guardian CLI').version(version, '-v, -V, --version');
-
-  program
-    .command('setup')
-    .description('Interactive guided setup (init + install + run)')
-    .action(async () => exitWith(setupCommand()));
 
   program
     .command('init')

@@ -33,28 +33,13 @@ function createFile(filePath: string, content: string): boolean {
   return true;
 }
 
-export async function initCommand(
-  rulesFile = 'AGENTS.md',
-  provider = 'claude',
-  cwd = process.cwd()
-): Promise<number> {
-  const config = DEFAULT_CONFIG.replace('PROVIDER="claude"', `PROVIDER="${provider}"`).replace(
-    'RULES_FILE="AGENTS.md"',
-    `RULES_FILE="${rulesFile}"`
-  );
+export async function initCommand(cwd = process.cwd()): Promise<number> {
+  createFile(join(cwd, '.guardian'), DEFAULT_CONFIG);
+  createFile(join(cwd, 'AGENTS.md'), DEFAULT_AGENTS);
 
-  const overwrite = (filePath: string, content: string): void => {
-    writeFileSync(filePath, content, 'utf8');
-  };
-
-  const guardianPath = join(cwd, '.guardian');
-  if (existsSync(guardianPath)) {
-    overwrite(guardianPath, config);
-  } else {
-    createFile(guardianPath, config);
-  }
-
-  createFile(join(cwd, rulesFile), DEFAULT_AGENTS);
-
+  console.log('[Guardian] Next steps:');
+  console.log('  1. Update AGENTS.md with your project rules.');
+  console.log('  2. Adjust .guardian if you need a different provider or timeout.');
+  console.log('  3. Run `guardian install` to enable the git hook.');
   return 0;
 }
