@@ -77,7 +77,12 @@ function parseProvider(
   const [providerPart, ...modelParts] = value.split(':');
   const provider = providerPart?.trim() as ProviderName | undefined;
 
-  if (provider !== 'claude' && provider !== 'gemini' && provider !== 'opencode') {
+  if (
+    provider !== 'claude' &&
+    provider !== 'gemini' &&
+    provider !== 'opencode' &&
+    provider !== 'codex'
+  ) {
     return undefined;
   }
 

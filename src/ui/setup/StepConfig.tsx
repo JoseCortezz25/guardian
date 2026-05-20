@@ -8,6 +8,7 @@ const PROVIDERS = [
   { label: 'Claude', value: 'claude' },
   { label: 'Gemini', value: 'gemini' },
   { label: 'OpenCode', value: 'opencode' },
+  { label: 'Codex', value: 'codex' },
 ];
 
 export interface ConfigResult {
