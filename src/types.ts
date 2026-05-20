@@ -1,4 +1,4 @@
-export type ProviderName = 'claude' | 'gemini' | 'opencode';
+export type ProviderName = 'claude' | 'gemini' | 'opencode' | 'codex';
 
 export interface GuardianConfig {
   provider: ProviderName;

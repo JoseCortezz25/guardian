@@ -19,6 +19,9 @@ describe('getProvider', () => {
     expect(getProvider({ ...baseConfig, provider: 'opencode', providerModel: 'o3' }).name).toBe(
       'opencode'
     );
+    expect(getProvider({ ...baseConfig, provider: 'codex', providerModel: 'gpt-4o' }).name).toBe(
+      'codex'
+    );
   });
 
   it('throws for an unknown provider', () => {
