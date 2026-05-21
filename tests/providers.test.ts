@@ -22,6 +22,9 @@ describe('getProvider', () => {
     expect(getProvider({ ...baseConfig, provider: 'codex', providerModel: 'gpt-4o' }).name).toBe(
       'codex'
     );
+    expect(
+      getProvider({ ...baseConfig, provider: 'antigravity', providerModel: 'gemini-3.5-pro' }).name
+    ).toBe('antigravity');
   });
 
   it('throws for an unknown provider', () => {

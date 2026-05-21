@@ -81,7 +81,8 @@ function parseProvider(
     provider !== 'claude' &&
     provider !== 'gemini' &&
     provider !== 'opencode' &&
-    provider !== 'codex'
+    provider !== 'codex' &&
+    provider !== 'antigravity'
   ) {
     return undefined;
   }

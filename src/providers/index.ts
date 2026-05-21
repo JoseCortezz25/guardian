@@ -1,4 +1,5 @@
 import type { GuardianConfig, Provider } from '../types';
+import { AntigravityProvider } from './antigravity';
 import { ClaudeProvider } from './claude';
 import { CodexProvider } from './codex';
 import { GeminiProvider } from './gemini';
@@ -14,9 +15,11 @@ export function getProvider(config: GuardianConfig): Provider {
       return new OpencodeProvider(config.providerModel);
     case 'codex':
       return new CodexProvider(config.providerModel);
+    case 'antigravity':
+      return new AntigravityProvider(config.providerModel);
     default:
       throw new Error(
-        `[Guardian] Unknown provider '${String(config.provider)}'. Expected one of: claude, gemini, opencode, codex.`
+        `[Guardian] Unknown provider '${String(config.provider)}'. Expected one of: claude, gemini, opencode, codex, antigravity.`
       );
   }
 }
