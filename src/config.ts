@@ -209,13 +209,28 @@ function applyRawConfig(base: GuardianConfig, raw: RawConfig): GuardianConfig {
   return next;
 }
 
+function loadIgnoreFile(filePath: string): string[] {
+  if (!existsSync(filePath)) return [];
+  return readFileSync(filePath, 'utf-8')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0 && !line.startsWith('#'));
+}
+
 export function loadConfig(cwd = process.cwd()): GuardianConfig {
   const globalConfigPath = join(homedir(), '.config', 'guardian', 'config');
   const projectConfigPath = join(cwd, '.guardian');
 
-  return [
+  const config = [
     parseConfigFile(globalConfigPath),
     parseConfigFile(projectConfigPath),
     mapEnvConfig(process.env),
   ].reduce((config, raw) => applyRawConfig(config, raw), { ...DEFAULTS });
+
+  const ignorePatterns = loadIgnoreFile(join(cwd, '.guardianignore'));
+  if (ignorePatterns.length > 0) {
+    config.excludePatterns = [...config.excludePatterns, ...ignorePatterns];
+  }
+
+  return config;
 }

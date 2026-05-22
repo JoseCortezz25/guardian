@@ -105,4 +105,59 @@ describe('loadConfig', () => {
       providerModel: 'anthropic/claude-opus-4',
     });
   });
+
+  describe('.guardianignore', () => {
+    it('excludePatterns unchanged when .guardianignore does not exist', () => {
+      const projectDir = createTempProject();
+
+      expect(loadConfig(projectDir).excludePatterns).toEqual([
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        '**/*.d.ts',
+        '**/*.stories.tsx',
+      ]);
+    });
+
+    it('merges .guardianignore patterns with existing excludePatterns', () => {
+      const projectDir = createTempProject();
+      writeFileSync(join(projectDir, '.guardianignore'), 'src/generated/**\ndist/**');
+
+      expect(loadConfig(projectDir).excludePatterns).toEqual([
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        '**/*.d.ts',
+        '**/*.stories.tsx',
+        'src/generated/**',
+        'dist/**',
+      ]);
+    });
+
+    it('ignores comment lines and blank lines in .guardianignore', () => {
+      const projectDir = createTempProject();
+      writeFileSync(
+        join(projectDir, '.guardianignore'),
+        ['# this is a comment', '', 'src/legacy/**', '', '# another comment', 'build/**'].join('\n')
+      );
+
+      expect(loadConfig(projectDir).excludePatterns).toContain('src/legacy/**');
+      expect(loadConfig(projectDir).excludePatterns).toContain('build/**');
+      expect(loadConfig(projectDir).excludePatterns).not.toContain('# this is a comment');
+      expect(loadConfig(projectDir).excludePatterns).not.toContain('');
+    });
+
+    it('.guardianignore patterns add to EXCLUDE_PATTERNS from .guardian, not replace', () => {
+      const projectDir = createTempProject();
+      writeFileSync(join(projectDir, '.guardian'), 'EXCLUDE_PATTERNS="**/*.snap"');
+      writeFileSync(join(projectDir, '.guardianignore'), 'src/generated/**');
+
+      expect(loadConfig(projectDir).excludePatterns).toEqual(['**/*.snap', 'src/generated/**']);
+    });
+
+    it('treats # mid-line as part of the pattern, not a comment', () => {
+      const projectDir = createTempProject();
+      writeFileSync(join(projectDir, '.guardianignore'), 'src/file#name.ts');
+
+      expect(loadConfig(projectDir).excludePatterns).toContain('src/file#name.ts');
+    });
+  });
 });
