@@ -28,10 +28,11 @@ export default defineConfig({
     'ink-select-input',
     'ink-spinner',
     'ink-text-input',
-    'micromatch',
-    'commander',
   ],
   esbuildPlugins: [emptyModule],
+  banner: {
+    js: `import { createRequire } from 'module'; const require = createRequire(import.meta.url);`,
+  },
   sourcemap: true,
   clean: true,
   esbuildOptions(options) {
