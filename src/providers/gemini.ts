@@ -9,7 +9,8 @@ export class GeminiProvider implements Provider {
   }
 
   call(prompt: string, opts: { timeout: number }): Promise<string> {
-    return spawnWithTimeout('gemini', ['-p', prompt], {
+    return spawnWithTimeout('gemini', [], {
+      stdin: prompt,
       timeout: opts.timeout * 1000,
     });
   }
