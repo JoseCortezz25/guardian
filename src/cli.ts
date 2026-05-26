@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { addSkillsCommand } from './commands/add';
 import { cacheClearAllCommand, cacheClearCommand, cacheStatusCommand } from './commands/cache';
 import { initCommand } from './commands/init';
 import { installCommand, uninstallCommand } from './commands/install';
@@ -70,6 +71,13 @@ export function createProgram(): Command {
     .command('update')
     .description('Update Guardian CLI to the latest version')
     .action(async () => exitWith(updateCommand()));
+
+  const add = program.command('add').description('Add integrations to your project');
+
+  add
+    .command('skills')
+    .description('Install Guardian skills into your AI provider')
+    .action(async () => exitWith(addSkillsCommand()));
 
   return program;
 }
