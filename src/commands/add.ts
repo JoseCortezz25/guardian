@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
 export async function addSkillsCommand(): Promise<number> {
-  console.log('[Guardian] Installing Guardian skills via npx...');
+  console.log('[Guardian] Installing Guardian skills for your AI provider...');
 
   const result = spawnSync('npx', ['skills', 'add', 'JoseCortezz25/guardian'], {
     stdio: 'inherit',

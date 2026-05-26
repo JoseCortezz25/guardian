@@ -76,7 +76,7 @@ export function createProgram(): Command {
 
   add
     .command('skills')
-    .description('Install Guardian skills into Claude Code')
+    .description('Install Guardian skills into your AI provider')
     .action(async () => exitWith(addSkillsCommand()));
 
   return program;
