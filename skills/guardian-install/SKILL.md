@@ -12,31 +12,26 @@ Guardian runs AI-assisted code review as a Git hook. When you commit, it inspect
 
 ## Prerequisites
 
-- Node.js ≥ 18
-- An AI provider CLI already installed and authenticated (`claude`, `gemini`, or `opencode`)
+- Node.js ≥ 22
+- An AI provider CLI already installed and authenticated (`claude`, `gemini`, `opencode`, `codex`, or `agy-agent`)
 - A Git repository
 
 ## Step 1 — Install Guardian
 
 **From npm (recommended):**
+
 ```bash
-npm install -D guardian
+npm install -D @ajosecortes/guardian-cli
 ```
 
-**Globally linked (local dev / this repo):**
-```bash
-npm link
-```
+**Globally:**
 
-**From a local pack:**
 ```bash
-# In the guardian repo
-npm pack
-# In the target project
-npm install -D /path/to/guardian-1.0.0.tgz
+npm install -g @ajosecortes/guardian-cli
 ```
 
 Verify:
+
 ```bash
 npx guardian --help
 ```
@@ -51,10 +46,10 @@ guardian init
 
 This creates two files:
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                               |
+| ----------- | ----------------------------------------------------- |
 | `.guardian` | Project configuration (provider, file patterns, etc.) |
-| `AGENTS.md` | Review rules the AI will follow |
+| `AGENTS.md` | Review rules the AI will follow                       |
 
 ## Step 3 — Install the Git hook
 
@@ -69,6 +64,7 @@ npx guardian run || exit 1
 ```
 
 To hook `commit-msg` instead of `pre-commit`:
+
 ```bash
 guardian install --commit-msg
 ```
@@ -95,6 +91,10 @@ PROVIDER="claude"       # Claude Code CLI
 PROVIDER="gemini"       # Gemini CLI
 PROVIDER="opencode"     # OpenCode CLI (default model)
 PROVIDER="opencode:anthropic/claude-opus-4"  # OpenCode with specific model
+PROVIDER="codex"        # OpenAI Codex CLI
+PROVIDER="codex:o3"     # Codex with specific model
+PROVIDER="antigravity"  # Antigravity CLI (agy-agent)
+PROVIDER="antigravity:my-model"  # Antigravity with specific model
 ```
 
 The provider CLI must be installed and in `PATH`.
@@ -107,26 +107,38 @@ This is where the AI gets its review instructions. Be explicit about what matter
 # Code Review Rules
 
 ## General
+
 - Enforce consistent naming conventions
 - Flag functions longer than 50 lines
 - Reject console.log left in production code
 
 ## TypeScript
+
 - Require explicit return types on public functions
 - No use of `any` type
 
 ## Security
+
 - Flag hardcoded credentials or tokens
 - Validate all user inputs at system boundaries
 ```
 
 You can also reference other markdown files using backtick syntax:
+
 ```markdown
 - UI rules: `docs/ui-rules.md`
 - API rules: `docs/api-rules.md`
 ```
 
 Guardian will inline those files into the final prompt automatically.
+
+## Step 6 — Install Guardian skills (optional)
+
+Install Guardian's skill set into your AI provider so it understands the tool natively:
+
+```bash
+guardian add skills
+```
 
 ## Verify it works
 
@@ -135,6 +147,16 @@ guardian run
 ```
 
 This runs a manual review against currently staged files. You should see the AI provider output and a final `STATUS: PASSED` or `STATUS: FAILED`.
+
+## Ignoring files
+
+Create a `.guardianignore` file in the project root to exclude paths from review (same syntax as `.gitignore`):
+
+```
+dist/
+*.generated.ts
+coverage/
+```
 
 ## Removing Guardian
 
@@ -146,9 +168,9 @@ Removes Guardian's hook block from `pre-commit` and `commit-msg`. Does not delet
 
 ## Troubleshooting
 
-| Problem | Fix |
-|---------|-----|
-| "Provider not found" | Install the provider CLI and make sure it's in `PATH` |
-| Hook not running | Check `.git/hooks/pre-commit` is executable (`chmod +x`) |
+| Problem              | Fix                                                               |
+| -------------------- | ----------------------------------------------------------------- |
+| "Provider not found" | Install the provider CLI and make sure it's in `PATH`             |
+| Hook not running     | Check `.git/hooks/pre-commit` is executable (`chmod +x`)          |
 | Review always passes | Check `STRICT_MODE="true"` and verify `AGENTS.md` has clear rules |
-| Slow on large repos | Enable `CACHE="true"` — unchanged files are skipped automatically |
+| Slow on large repos  | Enable `CACHE="true"` — unchanged files are skipped automatically |
