@@ -46,8 +46,17 @@ export function createProgram(): Command {
     .option('--pr-mode', 'Review files changed against the base branch')
     .option('--ci', 'Review files changed in the last commit')
     .option('--all', 'Review all tracked files in the repository')
-    .action(async (opts: { noCache?: boolean; prMode?: boolean; ci?: boolean; all?: boolean }) =>
-      exitWith(runCommand(opts))
+    .option('--dir <path>', 'Limit review to files inside a specific directory')
+    .option('--output <file>', 'Save the review report to a file')
+    .action(
+      async (opts: {
+        noCache?: boolean;
+        prMode?: boolean;
+        ci?: boolean;
+        all?: boolean;
+        dir?: string;
+        output?: string;
+      }) => exitWith(runCommand(opts))
     );
 
   const cache = program.command('cache').description('Inspect and manage cache');

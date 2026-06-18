@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import micromatch from 'micromatch';
@@ -22,6 +22,49 @@ export interface RunOptions {
   prMode?: boolean;
   ci?: boolean;
   all?: boolean;
+  dir?: string;
+  output?: string;
+}
+
+function buildReport(params: {
+  status: 'PASSED' | 'FAILED' | 'AMBIGUOUS';
+  provider: string;
+  mode: string;
+  dir?: string;
+  rulesFile: string;
+  filesReviewed: string[];
+  violations?: string;
+  raw?: string;
+}): string {
+  const timestamp = new Date().toISOString();
+  const lines: string[] = [
+    '# Guardian Review Report',
+    '',
+    `**Date:** ${timestamp}`,
+    `**Provider:** ${params.provider}`,
+    `**Mode:** ${params.mode}`,
+    `**Rules file:** ${params.rulesFile}`,
+    ...(params.dir ? [`**Directory:** ${params.dir}`] : []),
+    `**Files reviewed:** ${params.filesReviewed.length}`,
+    '',
+    `## Status: ${params.status}`,
+    '',
+  ];
+
+  if (params.status === 'FAILED' && params.violations) {
+    lines.push('## Violations', '', params.violations, '');
+  }
+
+  if (params.status === 'AMBIGUOUS' && params.raw) {
+    lines.push('## Response', '', params.raw, '');
+  }
+
+  lines.push('## Files Reviewed', '');
+  for (const file of params.filesReviewed) {
+    lines.push(`- \`${file}\``);
+  }
+
+  return lines.join('\n');
 }
 
 function getWorkingTreeContent(filePath: string, cwd: string): string {
@@ -76,6 +119,9 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
   console.log(`[Guardian] Rules file: ${config.rulesFile}`);
   console.log(`[Guardian] Cache: ${cacheEnabled ? 'enabled' : 'disabled'}`);
   console.log(`[Guardian] Mode: ${mode}`);
+  if (opts.dir) {
+    console.log(`[Guardian] Directory filter: ${opts.dir}`);
+  }
 
   if (!(await provider.isAvailable())) {
     return handleOperationalError(
@@ -99,6 +145,11 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
     files = getCiFiles(config.filePatterns, config.excludePatterns, cwd);
   } else {
     files = getStagedFiles(config.filePatterns, config.excludePatterns, cwd);
+  }
+
+  if (opts.dir) {
+    const normalizedDir = opts.dir.replace(/\\/g, '/').replace(/\/$/, '');
+    files = files.filter(f => f.startsWith(`${normalizedDir}/`) || f === normalizedDir);
   }
 
   if (files.length === 0) {
@@ -160,6 +211,28 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
 
   const result = parseResponse(rawResponse);
 
+  const reviewedPaths = filesToReview.map(f => f.path);
+
+  function saveReport(
+    status: 'PASSED' | 'FAILED' | 'AMBIGUOUS',
+    violations?: string,
+    raw?: string
+  ): void {
+    if (!opts.output) return;
+    const report = buildReport({
+      status,
+      provider: provider.name,
+      mode,
+      dir: opts.dir,
+      rulesFile: config.rulesFile,
+      filesReviewed: reviewedPaths,
+      violations,
+      raw,
+    });
+    writeFileSync(join(cwd, opts.output), report, 'utf8');
+    console.log(`[Guardian] Report saved to ${opts.output}`);
+  }
+
   if (result.status === 'PASSED') {
     for (const file of filesToReview) {
       cache.markPassed(file.content);
@@ -168,16 +241,19 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
     console.log(
       `[Guardian] PASSED (${filesToReview.length} file${filesToReview.length === 1 ? '' : 's'} reviewed)`
     );
+    saveReport('PASSED');
     return 0;
   }
 
   if (result.status === 'FAILED') {
     console.error(result.violations ?? '[Guardian] Review failed with no details.');
+    saveReport('FAILED', result.violations);
     return 1;
   }
 
   const ambiguousMessage = result.raw
     ? `Ambiguous provider response:\n${result.raw}`
     : 'Ambiguous provider response.';
+  saveReport('AMBIGUOUS', undefined, result.raw);
   return handleOperationalError(ambiguousMessage, config.strictMode);
 }
