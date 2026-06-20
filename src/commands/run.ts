@@ -15,13 +15,16 @@ import {
 import { parseResponse } from '../parser';
 import { buildPrompt, resolveRulesFile } from '../prompt';
 import { getProvider } from '../providers';
-import type { StagedFile } from '../types';
+import { generateReport } from '../report';
+import type { ReviewStatus, StagedFile } from '../types';
 
 export interface RunOptions {
   noCache?: boolean;
   prMode?: boolean;
   ci?: boolean;
   all?: boolean;
+  files?: string[];
+  report?: boolean;
 }
 
 function getWorkingTreeContent(filePath: string, cwd: string): string {
@@ -65,6 +68,14 @@ function getCiFiles(filePatterns: string[], excludePatterns: string[], cwd: stri
   return included.filter(file => !excluded.has(file));
 }
 
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
 export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise<number> {
   const config = loadConfig(cwd);
   const cacheEnabled = config.cache && !opts.noCache;
@@ -99,6 +110,13 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
     files = getCiFiles(config.filePatterns, config.excludePatterns, cwd);
   } else {
     files = getStagedFiles(config.filePatterns, config.excludePatterns, cwd);
+  }
+
+  if (opts.files && opts.files.length > 0) {
+    files = micromatch(files, opts.files);
+    console.log(
+      `[Guardian] Filtered to ${files.length} file${files.length === 1 ? '' : 's'} matching: ${opts.files.join(', ')}`
+    );
   }
 
   if (files.length === 0) {
@@ -145,39 +163,105 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
     );
   }
 
-  const prompt = buildPrompt(rules, filesToReview);
+  const batches = chunkArray(filesToReview, config.batchSize);
+  const totalBatches = batches.length;
 
-  let rawResponse: string;
-
-  try {
-    rawResponse = await provider.call(prompt, { timeout: config.timeout });
-  } catch (error) {
-    return handleOperationalError(
-      error instanceof Error ? error.message : 'Provider request failed.',
-      config.strictMode
+  if (totalBatches > 1) {
+    console.log(
+      `[Guardian] Processing ${totalBatches} batches of up to ${config.batchSize} files each`
     );
   }
 
-  const result = parseResponse(rawResponse);
+  let finalStatus: ReviewStatus = 'PASSED';
+  const allViolations: string[] = [];
+  const startedAt = new Date();
 
-  if (result.status === 'PASSED') {
-    for (const file of filesToReview) {
-      cache.markPassed(file.content);
+  for (let i = 0; i < batches.length; i++) {
+    const batch = batches[i];
+
+    if (totalBatches > 1) {
+      console.log(
+        `[Guardian] Batch ${i + 1}/${totalBatches}: reviewing ${batch.length} file${batch.length === 1 ? '' : 's'}`
+      );
     }
 
+    const prompt = buildPrompt(rules, batch);
+    let rawResponse: string;
+
+    try {
+      rawResponse = await provider.call(prompt, { timeout: config.timeout });
+    } catch (error) {
+      return handleOperationalError(
+        error instanceof Error ? error.message : 'Provider request failed.',
+        config.strictMode
+      );
+    }
+
+    const result = parseResponse(rawResponse);
+
+    if (result.status === 'PASSED') {
+      for (const file of batch) {
+        cache.markPassed(file.content);
+      }
+    } else if (result.status === 'FAILED') {
+      finalStatus = 'FAILED';
+      if (result.violations) {
+        allViolations.push(
+          totalBatches > 1
+            ? `#### Batch ${i + 1} (${batch.map(f => f.path).join(', ')})\n\n${result.violations}`
+            : result.violations
+        );
+      }
+    } else {
+      if (finalStatus !== 'FAILED') {
+        finalStatus = 'AMBIGUOUS';
+      }
+      if (result.raw) {
+        allViolations.push(result.raw);
+      }
+    }
+  }
+
+  const combinedViolations =
+    allViolations.length > 0 ? allViolations.join('\n\n---\n\n') : undefined;
+
+  if (opts.report) {
+    try {
+      const reportPath = await generateReport(
+        {
+          date: startedAt,
+          status: finalStatus,
+          provider: provider.name,
+          mode,
+          filesReviewed: filesToReview.length,
+          totalFiles: files.length,
+          violations: combinedViolations,
+          batchCount: totalBatches,
+        },
+        cwd
+      );
+      console.log(`[Guardian] Report saved: ${reportPath}`);
+    } catch (error) {
+      console.warn(
+        `[Guardian] Failed to write report: ${error instanceof Error ? error.message : error}`
+      );
+    }
+  }
+
+  if (finalStatus === 'PASSED') {
     console.log(
       `[Guardian] PASSED (${filesToReview.length} file${filesToReview.length === 1 ? '' : 's'} reviewed)`
     );
     return 0;
   }
 
-  if (result.status === 'FAILED') {
-    console.error(result.violations ?? '[Guardian] Review failed with no details.');
+  if (finalStatus === 'FAILED') {
+    console.error(combinedViolations ?? '[Guardian] Review failed with no details.');
     return 1;
   }
 
-  const ambiguousMessage = result.raw
-    ? `Ambiguous provider response:\n${result.raw}`
+  const ambiguousMessage = combinedViolations
+    ? `Ambiguous provider response:\n${combinedViolations}`
     : 'Ambiguous provider response.';
   return handleOperationalError(ambiguousMessage, config.strictMode);
 }

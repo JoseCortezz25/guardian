@@ -33,6 +33,7 @@ describe('loadConfig', () => {
       strictMode: true,
       timeout: 300,
       cache: true,
+      batchSize: 20,
     });
   });
 
