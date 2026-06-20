@@ -68,6 +68,10 @@ function getCiFiles(filePatterns: string[], excludePatterns: string[], cwd: stri
   return included.filter(file => !excluded.has(file));
 }
 
+function normalizeFilePatterns(patterns: string[]): string[] {
+  return patterns.map(p => (/[*?{[]/.test(p) ? p : `${p.replace(/\/$/, '')}/**`));
+}
+
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -113,7 +117,8 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
   }
 
   if (opts.files && opts.files.length > 0) {
-    files = micromatch(files, opts.files);
+    const normalizedPatterns = normalizeFilePatterns(opts.files);
+    files = micromatch(files, normalizedPatterns);
     console.log(
       `[Guardian] Filtered to ${files.length} file${files.length === 1 ? '' : 's'} matching: ${opts.files.join(', ')}`
     );
