@@ -63,16 +63,17 @@ export async function resolveRulesFile(rulesPath: string, cwd = process.cwd()): 
 }
 
 export function buildPrompt(rules: string, files: StagedFile[], commitMessage?: string): string {
+  const fileCount = files.length;
+  const fence = '```';
+
   const sections = [
-    'You are reviewing code changes against the project rules below.',
+    'You are a senior code reviewer tasked with enforcing project coding standards.',
     '',
     '## Coding Standards',
     rules.trim(),
     '',
-    '## Files To Review',
-    files
-      .map(file => `### ${file.path}\n\n\u0060\u0060\u0060\n${file.content}\n\u0060\u0060\u0060`)
-      .join('\n\n'),
+    `## Files To Review (${fileCount} file${fileCount === 1 ? '' : 's'})`,
+    files.map(file => `### ${file.path}\n\n${fence}\n${file.content}\n${fence}`).join('\n\n'),
   ];
 
   if (commitMessage) {
@@ -82,12 +83,20 @@ export function buildPrompt(rules: string, files: StagedFile[], commitMessage?: 
   sections.push(
     '',
     '## Instructions',
-    'Review only the files shown above.',
-    'Apply the coding standards strictly.',
-    'Respond with STATUS: PASSED when there are no violations.',
-    'Respond with STATUS: FAILED when you find any violation.',
-    'Your response must start with exactly STATUS: PASSED or STATUS: FAILED.',
-    'When failing, include a concise list of violations and the affected files.'
+    `Review the ${fileCount === 1 ? 'file' : `${fileCount} files`} above against every rule in the Coding Standards section.`,
+    'Apply each rule strictly. Do not skip any rule. Do not evaluate files not listed above.',
+    '',
+    'Your response MUST begin with exactly one of these two lines (no leading text, no formatting):',
+    'STATUS: PASSED',
+    'STATUS: FAILED',
+    '',
+    'Use STATUS: PASSED only when NO violations are found across ALL reviewed files.',
+    'Use STATUS: FAILED when at least one violation is found in any file.',
+    '',
+    'After STATUS: FAILED, list each violation in this format:',
+    '- **<file path>**: <rule violated> — <brief description of the issue>',
+    '',
+    'Do not add any text before the STATUS line.'
   );
 
   return sections.join('\n');

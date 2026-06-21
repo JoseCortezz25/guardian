@@ -46,8 +46,20 @@ export function createProgram(): Command {
     .option('--pr-mode', 'Review files changed against the base branch')
     .option('--ci', 'Review files changed in the last commit')
     .option('--all', 'Review all tracked files in the repository')
-    .action(async (opts: { noCache?: boolean; prMode?: boolean; ci?: boolean; all?: boolean }) =>
-      exitWith(runCommand(opts))
+    .option(
+      '--files <patterns...>',
+      'Filter reviewed files by glob patterns (use with --all or --ci)'
+    )
+    .option('--report', 'Generate a markdown report in guardian/reports/')
+    .action(
+      async (opts: {
+        noCache?: boolean;
+        prMode?: boolean;
+        ci?: boolean;
+        all?: boolean;
+        files?: string[];
+        report?: boolean;
+      }) => exitWith(runCommand(opts))
     );
 
   const cache = program.command('cache').description('Inspect and manage cache');
