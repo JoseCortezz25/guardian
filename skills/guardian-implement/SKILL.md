@@ -51,13 +51,13 @@ PR_BASE_BRANCH="main"
 
 ### Environment variable overrides
 
-| Variable | Overrides |
-|----------|-----------|
-| `GUARDIAN_PROVIDER` | `PROVIDER` |
-| `GUARDIAN_TIMEOUT` | `TIMEOUT` |
+| Variable               | Overrides     |
+| ---------------------- | ------------- |
+| `GUARDIAN_PROVIDER`    | `PROVIDER`    |
+| `GUARDIAN_TIMEOUT`     | `TIMEOUT`     |
 | `GUARDIAN_STRICT_MODE` | `STRICT_MODE` |
-| `GUARDIAN_RULES_FILE` | `RULES_FILE` |
-| `GUARDIAN_CACHE` | `CACHE` |
+| `GUARDIAN_RULES_FILE`  | `RULES_FILE`  |
+| `GUARDIAN_CACHE`       | `CACHE`       |
 
 Useful for CI where you don't want to commit credentials or environment-specific settings.
 
@@ -101,11 +101,13 @@ Use backtick references to split rules across files. Guardian inlines them autom
 # Review Rules
 
 ## Standards
+
 - `docs/review/typescript-rules.md`
 - `docs/review/security-rules.md`
 - `docs/review/naming-conventions.md`
 
 ## Architecture
+
 - `docs/review/clean-architecture.md`
 ```
 
@@ -114,22 +116,26 @@ Each referenced file's content is appended to the prompt. This keeps `AGENTS.md`
 ### Writing effective rules
 
 Rules work best when they are:
+
 - **Specific**: "Flag functions over 50 lines" beats "keep functions short"
 - **Actionable**: the AI should know exactly what to flag vs. approve
 - **Scoped**: separate concerns (security, style, architecture) into sections
 
 ```markdown
 ## Security
+
 - Reject any hardcoded token, password, or secret (use env vars)
 - Flag SQL queries built by string concatenation
 - Require input validation for all data entering the system boundary
 
 ## TypeScript
+
 - No `any` type — use `unknown` + type guards instead
 - Public API functions must have explicit return type annotations
 - Enums over raw string literals for domain values
 
 ## Architecture
+
 - `docs/review/hexagonal-arch.md`
 - No direct database calls from UI components
 - Services must not import from other services (use interfaces)
@@ -139,12 +145,12 @@ Rules work best when they are:
 
 Guardian supports four mutually exclusive modes:
 
-| Mode | Command | Files reviewed |
-|------|---------|----------------|
-| Staged *(default)* | `guardian run` | Staged files (`git diff --cached`) |
-| PR | `guardian run --pr-mode` | Files changed vs. base branch |
-| CI | `guardian run --ci` | Files changed in last commit |
-| All | `guardian run --all` | All tracked files in the repo |
+| Mode               | Command                  | Files reviewed                     |
+| ------------------ | ------------------------ | ---------------------------------- |
+| Staged _(default)_ | `guardian run`           | Staged files (`git diff --cached`) |
+| PR                 | `guardian run --pr-mode` | Files changed vs. base branch      |
+| CI                 | `guardian run --ci`      | Files changed in last commit       |
+| All                | `guardian run --all`     | All tracked files in the repo      |
 
 ### When to use each mode
 
@@ -166,6 +172,7 @@ guardian run --all --no-cache
 Guardian caches reviews by **file content hash** under `~/.cache/guardian`.
 
 The cache invalidates automatically when:
+
 - `AGENTS.md` (or your `RULES_FILE`) changes
 - `.guardian` changes
 
@@ -193,7 +200,7 @@ Example GitHub Actions step:
   run: npx guardian run --ci
   env:
     GUARDIAN_PROVIDER: claude
-    GUARDIAN_STRICT_MODE: "true"
+    GUARDIAN_STRICT_MODE: 'true'
 ```
 
 Set `STRICT_MODE="true"` in CI so ambiguous output fails the pipeline rather than silently passing.
@@ -207,6 +214,7 @@ npx guardian run || exit 1
 ```
 
 Guardian exits with:
+
 - `0` (pass) → commit continues if review output contains `STATUS: PASSED`
 - `1` (fail) → commit is blocked if output contains `STATUS: FAILED`
 - Ambiguous output → depends on `STRICT_MODE`:

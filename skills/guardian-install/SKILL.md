@@ -19,16 +19,19 @@ Guardian runs AI-assisted code review as a Git hook. When you commit, it inspect
 ## Step 1 — Install Guardian
 
 **From npm (recommended):**
+
 ```bash
 npm install -D guardian
 ```
 
 **Globally linked (local dev / this repo):**
+
 ```bash
 npm link
 ```
 
 **From a local pack:**
+
 ```bash
 # In the guardian repo
 npm pack
@@ -37,6 +40,7 @@ npm install -D /path/to/guardian-1.0.0.tgz
 ```
 
 Verify:
+
 ```bash
 npx guardian --help
 ```
@@ -51,10 +55,10 @@ guardian init
 
 This creates two files:
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                               |
+| ----------- | ----------------------------------------------------- |
 | `.guardian` | Project configuration (provider, file patterns, etc.) |
-| `AGENTS.md` | Review rules the AI will follow |
+| `AGENTS.md` | Review rules the AI will follow                       |
 
 ## Step 3 — Install the Git hook
 
@@ -69,6 +73,7 @@ npx guardian run || exit 1
 ```
 
 To hook `commit-msg` instead of `pre-commit`:
+
 ```bash
 guardian install --commit-msg
 ```
@@ -107,20 +112,24 @@ This is where the AI gets its review instructions. Be explicit about what matter
 # Code Review Rules
 
 ## General
+
 - Enforce consistent naming conventions
 - Flag functions longer than 50 lines
 - Reject console.log left in production code
 
 ## TypeScript
+
 - Require explicit return types on public functions
 - No use of `any` type
 
 ## Security
+
 - Flag hardcoded credentials or tokens
 - Validate all user inputs at system boundaries
 ```
 
 You can also reference other markdown files using backtick syntax:
+
 ```markdown
 - UI rules: `docs/ui-rules.md`
 - API rules: `docs/api-rules.md`
@@ -146,9 +155,9 @@ Removes Guardian's hook block from `pre-commit` and `commit-msg`. Does not delet
 
 ## Troubleshooting
 
-| Problem | Fix |
-|---------|-----|
-| "Provider not found" | Install the provider CLI and make sure it's in `PATH` |
-| Hook not running | Check `.git/hooks/pre-commit` is executable (`chmod +x`) |
+| Problem              | Fix                                                               |
+| -------------------- | ----------------------------------------------------------------- |
+| "Provider not found" | Install the provider CLI and make sure it's in `PATH`             |
+| Hook not running     | Check `.git/hooks/pre-commit` is executable (`chmod +x`)          |
 | Review always passes | Check `STRICT_MODE="true"` and verify `AGENTS.md` has clear rules |
-| Slow on large repos | Enable `CACHE="true"` — unchanged files are skipped automatically |
+| Slow on large repos  | Enable `CACHE="true"` — unchanged files are skipped automatically |
