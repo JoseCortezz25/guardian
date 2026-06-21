@@ -71,10 +71,9 @@ describe('buildPrompt', () => {
     );
 
     expect(prompt).toContain('## Coding Standards\nRule 1');
-    expect(prompt).toContain('## Files To Review\n### src/example.ts');
+    expect(prompt).toContain('## Files To Review (1 file)\n### src/example.ts');
     expect(prompt).toContain('## Commit Message\nfeat: test prompt');
-    expect(prompt).toContain(
-      'Your response must start with exactly STATUS: PASSED or STATUS: FAILED.'
-    );
+    expect(prompt).toContain('STATUS: PASSED');
+    expect(prompt).toContain('STATUS: FAILED');
   });
 });

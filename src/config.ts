@@ -11,6 +11,7 @@ const DEFAULTS: GuardianConfig = {
   strictMode: true,
   timeout: 300,
   cache: true,
+  batchSize: 20,
 };
 
 type RawConfig = Partial<
@@ -22,7 +23,8 @@ type RawConfig = Partial<
     | 'STRICT_MODE'
     | 'TIMEOUT'
     | 'PR_BASE_BRANCH'
-    | 'CACHE',
+    | 'CACHE'
+    | 'BATCH_SIZE',
     string
   >
 >;
@@ -126,6 +128,7 @@ function parseConfigFile(filePath: string): RawConfig {
           TIMEOUT: true,
           PR_BASE_BRANCH: true,
           CACHE: true,
+          BATCH_SIZE: true,
         }
       )
     ) {
@@ -204,6 +207,11 @@ function applyRawConfig(base: GuardianConfig, raw: RawConfig): GuardianConfig {
 
   if (typeof cache === 'boolean') {
     next.cache = cache;
+  }
+
+  const batchSize = parseNumber(raw.BATCH_SIZE);
+  if (typeof batchSize === 'number' && batchSize > 0) {
+    next.batchSize = batchSize;
   }
 
   return next;

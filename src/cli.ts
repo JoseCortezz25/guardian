@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { addSkillsCommand } from './commands/add';
 import { cacheClearAllCommand, cacheClearCommand, cacheStatusCommand } from './commands/cache';
 import { initCommand } from './commands/init';
 import { installCommand, uninstallCommand } from './commands/install';
@@ -45,8 +46,20 @@ export function createProgram(): Command {
     .option('--pr-mode', 'Review files changed against the base branch')
     .option('--ci', 'Review files changed in the last commit')
     .option('--all', 'Review all tracked files in the repository')
-    .action(async (opts: { noCache?: boolean; prMode?: boolean; ci?: boolean; all?: boolean }) =>
-      exitWith(runCommand(opts))
+    .option(
+      '--files <patterns...>',
+      'Filter reviewed files by glob patterns (use with --all or --ci)'
+    )
+    .option('--report', 'Generate a markdown report in guardian/reports/')
+    .action(
+      async (opts: {
+        noCache?: boolean;
+        prMode?: boolean;
+        ci?: boolean;
+        all?: boolean;
+        files?: string[];
+        report?: boolean;
+      }) => exitWith(runCommand(opts))
     );
 
   const cache = program.command('cache').description('Inspect and manage cache');
@@ -70,6 +83,13 @@ export function createProgram(): Command {
     .command('update')
     .description('Update Guardian CLI to the latest version')
     .action(async () => exitWith(updateCommand()));
+
+  const add = program.command('add').description('Add integrations to your project');
+
+  add
+    .command('skills')
+    .description('Install Guardian skills into your AI provider')
+    .action(async () => exitWith(addSkillsCommand()));
 
   return program;
 }

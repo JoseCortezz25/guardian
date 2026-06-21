@@ -12,8 +12,8 @@ Guardian runs AI-assisted code review as a Git hook. When you commit, it inspect
 
 ## Prerequisites
 
-- Node.js ≥ 18
-- An AI provider CLI already installed and authenticated (`claude`, `gemini`, or `opencode`)
+- Node.js ≥ 22
+- An AI provider CLI already installed and authenticated (`claude`, `gemini`, `opencode`, `codex`, or `agy-agent`)
 - A Git repository
 
 ## Step 1 — Install Guardian
@@ -21,22 +21,13 @@ Guardian runs AI-assisted code review as a Git hook. When you commit, it inspect
 **From npm (recommended):**
 
 ```bash
-npm install -D guardian
+npm install -D @ajosecortes/guardian-cli
 ```
 
-**Globally linked (local dev / this repo):**
+**Globally:**
 
 ```bash
-npm link
-```
-
-**From a local pack:**
-
-```bash
-# In the guardian repo
-npm pack
-# In the target project
-npm install -D /path/to/guardian-1.0.0.tgz
+npm install -g @ajosecortes/guardian-cli
 ```
 
 Verify:
@@ -100,6 +91,10 @@ PROVIDER="claude"       # Claude Code CLI
 PROVIDER="gemini"       # Gemini CLI
 PROVIDER="opencode"     # OpenCode CLI (default model)
 PROVIDER="opencode:anthropic/claude-opus-4"  # OpenCode with specific model
+PROVIDER="codex"        # OpenAI Codex CLI
+PROVIDER="codex:o3"     # Codex with specific model
+PROVIDER="antigravity"  # Antigravity CLI (agy-agent)
+PROVIDER="antigravity:my-model"  # Antigravity with specific model
 ```
 
 The provider CLI must be installed and in `PATH`.
@@ -137,6 +132,14 @@ You can also reference other markdown files using backtick syntax:
 
 Guardian will inline those files into the final prompt automatically.
 
+## Step 6 — Install Guardian skills (optional)
+
+Install Guardian's skill set into your AI provider so it understands the tool natively:
+
+```bash
+guardian add skills
+```
+
 ## Verify it works
 
 ```bash
@@ -144,6 +147,16 @@ guardian run
 ```
 
 This runs a manual review against currently staged files. You should see the AI provider output and a final `STATUS: PASSED` or `STATUS: FAILED`.
+
+## Ignoring files
+
+Create a `.guardianignore` file in the project root to exclude paths from review (same syntax as `.gitignore`):
+
+```
+dist/
+*.generated.ts
+coverage/
+```
 
 ## Removing Guardian
 

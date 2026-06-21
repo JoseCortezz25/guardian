@@ -10,6 +10,7 @@ export interface GuardianConfig {
   timeout: number;
   prBaseBranch?: string;
   cache: boolean;
+  batchSize: number;
 }
 
 export type ReviewStatus = 'PASSED' | 'FAILED' | 'AMBIGUOUS';
