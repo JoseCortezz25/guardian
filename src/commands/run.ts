@@ -173,7 +173,7 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
 
   if (totalBatches > 1) {
     console.log(
-      `[Guardian] Processing ${totalBatches} batches of up to ${config.batchSize} files each`
+      `[Guardian] Processing ${totalBatches} batches of up to ${config.batchSize} files each (BATCH_SIZE configurable in .guardian)`
     );
   }
 
@@ -186,7 +186,7 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
 
     if (totalBatches > 1) {
       console.log(
-        `[Guardian] Batch ${i + 1}/${totalBatches}: reviewing ${batch.length} file${batch.length === 1 ? '' : 's'}`
+        `[Guardian] Batch ${i + 1}/${totalBatches}: reviewing ${batch.length} file${batch.length === 1 ? '' : 's'}...`
       );
     }
 
@@ -208,18 +208,23 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
       for (const file of batch) {
         cache.markPassed(file.content);
       }
+      if (totalBatches > 1) {
+        console.log(`[Guardian] Batch ${i + 1}/${totalBatches}: PASSED`);
+      }
     } else if (result.status === 'FAILED') {
       finalStatus = 'FAILED';
+      if (totalBatches > 1) {
+        console.log(`[Guardian] Batch ${i + 1}/${totalBatches}: FAILED`);
+      }
       if (result.violations) {
-        allViolations.push(
-          totalBatches > 1
-            ? `#### Batch ${i + 1} (${batch.map(f => f.path).join(', ')})\n\n${result.violations}`
-            : result.violations
-        );
+        allViolations.push(result.violations);
       }
     } else {
       if (finalStatus !== 'FAILED') {
         finalStatus = 'AMBIGUOUS';
+      }
+      if (totalBatches > 1) {
+        console.log(`[Guardian] Batch ${i + 1}/${totalBatches}: AMBIGUOUS`);
       }
       if (result.raw) {
         allViolations.push(result.raw);
@@ -227,8 +232,7 @@ export async function runCommand(opts: RunOptions, cwd = process.cwd()): Promise
     }
   }
 
-  const combinedViolations =
-    allViolations.length > 0 ? allViolations.join('\n\n---\n\n') : undefined;
+  const combinedViolations = allViolations.length > 0 ? allViolations.join('\n\n') : undefined;
 
   if (opts.report) {
     try {
