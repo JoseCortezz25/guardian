@@ -4,6 +4,14 @@ Guardian is a TypeScript CLI that runs AI-assisted code review as a Git hook.
 
 It inspects staged files, builds a review prompt from your project rules, calls a configured provider CLI, and blocks the commit if the review fails.
 
+> **⚠️ npm name collision**
+>
+> This package is published on npm as **`@ajosecortes/guardian-cli`**, not `guardian`.
+> Running `npx guardian` resolves to an **unrelated package** (`guardian@0.1.0`, last published 2014).
+> **Always use the scoped name** when installing or running via npx:
+> `npx @ajosecortes/guardian-cli run`
+> `npm install -D @ajosecortes/guardian-cli`
+
 ## Features
 
 - Interactive guided setup with terminal UI
@@ -20,6 +28,20 @@ It inspects staged files, builds a review prompt from your project rules, calls 
 - CLI commands for setup, init, install, run, and cache management
 
 ## Installation
+
+### From npm registry (recommended for end users)
+
+```bash
+npm install -D @ajosecortes/guardian-cli
+```
+
+After local install, the `guardian` binary is available in your project:
+
+```bash
+npx @ajosecortes/guardian-cli --help
+# or, after install:
+./node_modules/.bin/guardian --help
+```
 
 ### Local development
 
@@ -53,26 +75,18 @@ npm link
 guardian --help
 ```
 
-### Install in another repo
-
-Using a local pack:
-
-```bash
-npm pack
-```
-
-Then in another repository:
-
-```bash
-npm install -D /path/to/guardian-1.0.0.tgz
-npx guardian --help
-```
-
 ## Quick start
 
 Inside a Git repository you want to protect, run the interactive setup:
 
 ```bash
+# If installed locally:
+./node_modules/.bin/guardian setup
+
+# Via npx (always use scoped name):
+npx @ajosecortes/guardian-cli setup
+
+# If linked globally:
 guardian setup
 ```
 
@@ -87,8 +101,8 @@ If Guardian is already configured in the project, `setup` will detect it and ask
 Alternatively, you can run each step manually:
 
 ```bash
-guardian init
-guardian install
+npx @ajosecortes/guardian-cli init
+npx @ajosecortes/guardian-cli install
 ```
 
 ## Configuration
@@ -162,7 +176,7 @@ If those files exist, their contents are appended to the final prompt.
 Interactive guided setup that runs init, install, and a preview review in a single flow.
 
 ```bash
-guardian setup
+npx @ajosecortes/guardian-cli setup
 ```
 
 Prompts for:
@@ -182,13 +196,13 @@ Creates default `.guardian` and `AGENTS.md` files.
 Installs the Git hook into `.git/hooks/pre-commit`.
 
 ```bash
-guardian install
+npx @ajosecortes/guardian-cli install
 ```
 
 Install into `commit-msg` instead:
 
 ```bash
-guardian install --commit-msg
+npx @ajosecortes/guardian-cli install --commit-msg
 ```
 
 ### `guardian uninstall`
@@ -200,19 +214,19 @@ Removes Guardian-installed hook blocks from `pre-commit` and `commit-msg`.
 Runs the review manually.
 
 ```bash
-guardian run
+npx @ajosecortes/guardian-cli run
 ```
 
 #### Run modes
 
 Guardian supports four mutually exclusive modes that control which files are reviewed:
 
-| Mode               | Command                  | Files reviewed                                       |
-| ------------------ | ------------------------ | ---------------------------------------------------- |
-| Staged _(default)_ | `guardian run`           | Files in the git staging area (`git diff --cached`)  |
-| All                | `guardian run --all`     | All tracked files in the repository (`git ls-files`) |
-| PR                 | `guardian run --pr-mode` | Files changed against the base branch                |
-| CI                 | `guardian run --ci`      | Files changed in the last commit                     |
+| Mode               | Command                                       | Files reviewed                                       |
+| ------------------ | --------------------------------------------- | ---------------------------------------------------- |
+| Staged _(default)_ | `npx @ajosecortes/guardian-cli run`           | Files in the git staging area (`git diff --cached`)  |
+| All                | `npx @ajosecortes/guardian-cli run --all`     | All tracked files in the repository (`git ls-files`) |
+| PR                 | `npx @ajosecortes/guardian-cli run --pr-mode` | Files changed against the base branch                |
+| CI                 | `npx @ajosecortes/guardian-cli run --ci`      | Files changed in the last commit                     |
 
 **Default (staged) mode** is the fastest and recommended for day-to-day use as a pre-commit hook — it only reviews what you are about to commit.
 
@@ -241,11 +255,13 @@ Clears all Guardian cache data.
 
 ## Hook behavior
 
-After installation, Guardian adds a hook block that runs:
+After installation, Guardian adds a hook block that runs the local binary:
 
 ```bash
-npx guardian run || exit 1
+./node_modules/.bin/guardian run || exit 1
 ```
+
+> Make sure `@ajosecortes/guardian-cli` is installed as a devDependency in your project, otherwise the binary won't be available in `node_modules/.bin/`.
 
 If the provider returns:
 

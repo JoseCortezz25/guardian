@@ -4,7 +4,7 @@ import { dirname, isAbsolute, join, sep } from 'node:path';
 
 const BLOCK_START = '# >>> guardian start >>>';
 const BLOCK_END = '# <<< guardian end <<<';
-const HOOK_BLOCK = `${BLOCK_START}\nnpx guardian run || exit 1\n${BLOCK_END}`;
+const HOOK_BLOCK = `${BLOCK_START}\n./node_modules/.bin/guardian run || exit 1\n${BLOCK_END}`;
 
 function getHooksDir(cwd: string): string {
   try {
@@ -80,7 +80,7 @@ export async function uninstallCommand(cwd = process.cwd()): Promise<number> {
   removeHookBlock(join(hooksDir, 'commit-msg'));
   console.log('[Guardian] Guardian deactivated. Hook blocks removed.');
   console.log('[Guardian] To remove the package:');
-  console.log('[Guardian]   npm uninstall guardian        (local)');
-  console.log('[Guardian]   npm uninstall -g guardian     (global)');
+  console.log('[Guardian]   npm uninstall @ajosecortes/guardian-cli        (local)');
+  console.log('[Guardian]   npm uninstall -g @ajosecortes/guardian-cli     (global)');
   return 0;
 }
